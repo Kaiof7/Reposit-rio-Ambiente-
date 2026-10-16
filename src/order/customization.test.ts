@@ -25,6 +25,12 @@ describe("customization schema", () => {
     expect(fieldErrors(result.error!)).toEqual({ sizeId: "Escolha um tamanho disponível para este modelo." });
   });
 
+  it("accepts art by a designer with optional notes, within the limit", () => {
+    expect(customizationSchema.safeParse({ ...valid, artStyle: "designer" }).success).toBe(true);
+    const long = customizationSchema.safeParse({ ...valid, artStyle: "designer", designerNotes: "x".repeat(501) });
+    expect(fieldErrors(long.error!)).toEqual({ designerNotes: "Use no máximo 500 caracteres." });
+  });
+
   it("rejects unknown models and backgrounds", () => {
     const result = customizationSchema.safeParse({ ...valid, modelId: "nfc-magico", backgroundId: "dourado" });
     expect(Object.keys(fieldErrors(result.error!)).sort()).toEqual(["backgroundId", "modelId"]);

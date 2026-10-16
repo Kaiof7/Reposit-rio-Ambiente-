@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ModelId } from "@/catalog/models";
+import type { DetailsService } from "@/order/services";
 
 export const NFC_DESTINATIONS = {
   "avaliacao-google": { label: "Avaliação no Google", placeholder: "https://g.page/r/..." },
@@ -10,6 +11,15 @@ export const NFC_DESTINATIONS = {
 } as const;
 
 export type NfcDestination = keyof typeof NFC_DESTINATIONS;
+
+// Destinations the team can create when the customer does not have the
+// link yet. Instagram stays out: the account must be opened by the owner.
+export const CREATABLE_DESTINATIONS: Partial<Record<NfcDestination, DetailsService>> = {
+  "avaliacao-google": "google",
+  site: "site",
+  cardapio: "site",
+  outro: "site",
+};
 
 const DEFAULT_DESTINATION: Record<ModelId, NfcDestination> = {
   "avaliacao-google": "avaliacao-google",
@@ -53,8 +63,11 @@ export const nfcSchema = z
   .object({
     destination: z.enum(destinationIds, "Escolha para onde o chip vai levar."),
     url: z.string(),
+    needsCreation: z.boolean(),
   })
   .transform((value, ctx) => {
+    const creation = value.needsCreation ? CREATABLE_DESTINATIONS[value.destination] : undefined;
+    if (creation) return { destination: value.destination, url: null, creation };
     if (!value.url.trim()) {
       ctx.addIssue({ code: "custom", path: ["url"], message: "Informe o link que será gravado no chip." });
       return z.NEVER;
@@ -68,7 +81,7 @@ export const nfcSchema = z
       });
       return z.NEVER;
     }
-    return { destination: value.destination, url };
+    return { destination: value.destination, url, creation: undefined };
   });
 
 export type NfcInput = z.input<typeof nfcSchema>;

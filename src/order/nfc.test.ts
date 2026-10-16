@@ -27,21 +27,36 @@ describe("normalizeNfcUrl", () => {
 
 describe("nfcSchema", () => {
   it("outputs the normalized link", () => {
-    expect(nfcSchema.parse({ destination: "instagram", url: "@barbeariadoze" })).toEqual({
+    expect(nfcSchema.parse({ destination: "instagram", url: "@barbeariadoze", needsCreation: false })).toEqual({
       destination: "instagram",
       url: "https://www.instagram.com/barbeariadoze/",
+      creation: undefined,
     });
   });
 
   it("explains empty and invalid links on the url field", () => {
-    const empty = nfcSchema.safeParse({ destination: "site", url: " " });
+    const empty = nfcSchema.safeParse({ destination: "site", url: " ", needsCreation: false });
     expect(empty.error?.issues.map((issue) => [issue.path, issue.message])).toEqual([[["url"], "Informe o link que será gravado no chip."]]);
-    const invalid = nfcSchema.safeParse({ destination: "site", url: "meu site" });
+    const invalid = nfcSchema.safeParse({ destination: "site", url: "meu site", needsCreation: false });
     expect(invalid.error?.issues[0].message).toMatch(/não parece válido/);
   });
 
+  it("skips the link when the team will create it", () => {
+    expect(nfcSchema.parse({ destination: "avaliacao-google", url: "", needsCreation: true })).toEqual({
+      destination: "avaliacao-google",
+      url: null,
+      creation: "google",
+    });
+    expect(nfcSchema.parse({ destination: "cardapio", url: "lixo", needsCreation: true }).creation).toBe("site");
+  });
+
+  it("still requires a link for Instagram, which the team cannot create", () => {
+    const result = nfcSchema.safeParse({ destination: "instagram", url: "", needsCreation: true });
+    expect(result.error?.issues[0].message).toBe("Informe o link que será gravado no chip.");
+  });
+
   it("rejects unknown destinations", () => {
-    expect(nfcSchema.safeParse({ destination: "tiktok", url: "https://exemplo.com" }).success).toBe(false);
+    expect(nfcSchema.safeParse({ destination: "tiktok", url: "https://exemplo.com", needsCreation: false }).success).toBe(false);
   });
 });
 

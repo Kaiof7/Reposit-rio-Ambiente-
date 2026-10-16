@@ -3,6 +3,7 @@ import { BACKGROUNDS, MODELS, type BackgroundId, type ModelId } from "@/catalog/
 
 export const BUSINESS_NAME_MAX = 40;
 export const CALL_TO_ACTION_MAX = 30;
+export const DESIGNER_NOTES_MAX = 500;
 
 const modelIds = MODELS.map((model) => model.id) as [ModelId, ...ModelId[]];
 const backgroundIds = Object.keys(BACKGROUNDS) as [BackgroundId, ...BackgroundId[]];
@@ -22,6 +23,10 @@ export const customizationSchema = z
     businessName: requiredText("o nome do negócio", BUSINESS_NAME_MAX),
     callToAction: requiredText("a frase da plaquinha", CALL_TO_ACTION_MAX),
     willSendLogo: z.boolean(),
+    // "designer": a media professional makes the art by hand (extra service);
+    // the choices above still guide them.
+    artStyle: z.enum(["modelo", "designer"]),
+    designerNotes: z.string().trim().max(DESIGNER_NOTES_MAX, `Use no máximo ${DESIGNER_NOTES_MAX} caracteres.`),
   })
   .superRefine((value, ctx) => {
     const model = MODELS.find((candidate) => candidate.id === value.modelId);
@@ -43,6 +48,8 @@ export function initialCustomization(modelId: ModelId): CustomizationInput {
     businessName: "",
     callToAction: model.defaultCallToAction,
     willSendLogo: false,
+    artStyle: "modelo",
+    designerNotes: "",
   };
 }
 

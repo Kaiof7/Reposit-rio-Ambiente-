@@ -22,6 +22,8 @@ Objetivo: o cliente escolhe e personaliza a plaquinha sozinho, pelo celular, e c
 5. **Dados do pedido.** Nome, telefone/WhatsApp, cidade/CEP, quantidade e observações, somados às escolhas anteriores. Validação com Zod no cliente, com erro junto do campo.
 6. **Envio pelo WhatsApp.** Ao confirmar, o site mostra um resumo e, em seguida, abre `https://wa.me/<número do vendedor>?text=<mensagem codificada>` com todas as informações organizadas e legíveis.
 7. **Páginas de apoio.** Perguntas frequentes (funciona em iPhone e Android? precisa de app? dá para trocar o link depois?) e contato.
+8. **Serviços extras (pedido junto com a plaquinha).** Quem ainda não tem o link pode marcar "Ainda não tenho. Quero que vocês façam" no destino do chip (e, no fluxo 4, no QR code com link): **criação de site** (também para cardápio digital ou outro link) ou **cadastro no Google** (Perfil da Empresa, para receber avaliações). Uma etapa extra coleta o mínimo para começar: ramo, conteúdo e links do site; categoria e endereço (ou atendimento sem endereço fixo) do Google. Na personalização, o cliente pode pedir **arte sob medida**, feita à mão por um profissional de mídia, com observações opcionais. Tudo segue na mesma mensagem do WhatsApp.
+9. **Vitrine de sites.** Seção "Sites que já fizemos" na home, com sites reais feitos pela equipe, para dar credibilidade. Exemplo inicial: https://orcamento-assistencia-celular.vercel.app.
 
 ## MVP
 
@@ -34,6 +36,8 @@ Em ordem de prioridade:
 5. Formulário de pedido validado com Zod.
 6. Resumo e abertura do WhatsApp com a mensagem completa.
 7. FAQ e contato.
+8. Serviços extras: criação de site, cadastro no Google e arte sob medida, pedidos junto com a plaquinha.
+9. Vitrine de sites feitos pela equipe.
 
 ## Fora de escopo
 
@@ -42,6 +46,8 @@ Em ordem de prioridade:
 - Upload de logo: o cliente marca no formulário que enviará o logo pelo WhatsApp.
 - Geração da arte final e do QR code definitivo: o site faz só pré-visualização; o vendedor produz a arte.
 - Envio automático de mensagens: o próprio cliente envia a mensagem no WhatsApp dele.
+- Criação de perfil no Instagram: a conta precisa ser aberta pelo dono; o site só pede o @.
+- Execução dos serviços extras pelo site: o site só coleta o pedido; site, cadastro e arte são feitos pela equipe fora dele.
 
 ## Requisitos
 
@@ -69,9 +75,13 @@ Hipóteses reversíveis (podem mudar sem retrabalho grande):
 - Quantidade mínima por pedido: 1; máxima de exemplo, a definir com o vendedor.
 - O QR code Pix da pré-visualização segue o formato BR Code estático (Pix "copia e cola"), montado no navegador com tipo/chave/nome do recebedor e cidade do pedido. A arte final continua a cargo do vendedor.
 - Texto da ajuda para achar o link de avaliação do Google: redigido a partir da documentação pública do Google Perfil da Empresa, a revisar pelo vendedor.
+- Os serviços extras são opcionais e pedidos explicitamente: trocar o destino do chip desmarca o pedido de criação, para não incluir um serviço pago sem intenção.
 - O site aceita domínio sem `https://` e, no Instagram, só o `@perfil`, convertendo para o link completo mostrado ao cliente antes de seguir.
 
 Pendências que dependem do vendedor (não inventar):
+
+- **Preços e prazos dos serviços extras** (site, cadastro no Google, arte sob medida): o site mostra "Valor combinado pelo WhatsApp" até serem definidos.
+- **Descrição e imagem dos sites da vitrine:** o ambiente de desenvolvimento não acessou https://orcamento-assistencia-celular.vercel.app; a descrição atual ("Site de orçamento para uma assistência de celulares") foi deduzida do endereço e precisa ser confirmada. A vitrine usa uma ilustração de navegador até haver captura de tela real.
 
 - Número real de WhatsApp para `NEXT_PUBLIC_WHATSAPP_NUMBER` (configurado só no ambiente de deploy).
 - Respostas oficiais do FAQ quanto a regravação do chip ("dá para trocar o link depois?"), prazos de produção e frete.

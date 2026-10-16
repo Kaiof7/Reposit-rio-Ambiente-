@@ -2,7 +2,7 @@
 
 Loja online de plaquinhas NFC personalizadas para pequenos negócios brasileiros. O cliente escolhe o modelo, personaliza a arte, informa o link gravado no chip e o QR code opcional, e envia o pedido completo ao vendedor pelo WhatsApp. Detalhes em [PRODUCT.md](PRODUCT.md).
 
-Estado atual: vitrine (fluxo 1), personalização (fluxo 2) e link do chip (fluxo 3) implementados com catálogo de exemplo; fluxos 4 a 7 pendentes.
+Estado atual: vitrine, personalização (com arte sob medida), link do chip (com pedido de site ou cadastro no Google) e vitrine de sites implementados com catálogo de exemplo; QR code, dados do pedido, envio pelo WhatsApp e páginas de apoio pendentes.
 
 ## Executar
 

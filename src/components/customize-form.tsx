@@ -9,12 +9,15 @@ import { errorClass, inputClass, optionClass, primaryButtonClass } from "@/compo
 import {
   BUSINESS_NAME_MAX,
   CALL_TO_ACTION_MAX,
+  DESIGNER_NOTES_MAX,
   changeModel,
   customizationSchema,
   type CustomizationField,
   type CustomizationInput,
 } from "@/order/customization";
 import { fieldErrors } from "@/order/field-errors";
+import { SERVICES, SERVICE_PRICE_NOTE } from "@/catalog/services";
+import { TextField } from "@/components/text-field";
 
 const FIELD_FOCUS_TARGET: Record<CustomizationField, string> = {
   modelId: "grupo-modelo",
@@ -23,6 +26,8 @@ const FIELD_FOCUS_TARGET: Record<CustomizationField, string> = {
   businessName: "nome-negocio",
   callToAction: "frase",
   willSendLogo: "logo",
+  artStyle: "grupo-arte",
+  designerNotes: "notas-designer",
 };
 
 
@@ -203,10 +208,60 @@ export function CustomizeForm({ values, onChange: update, onNext }: CustomizeFor
           </p>
         </div>
 
+        <fieldset id="grupo-arte" className="flex flex-col gap-2">
+          <legend className="mb-2 text-lg font-semibold">Quem faz a arte?</legend>
+          <label className={optionClass}>
+            <input
+              type="radio"
+              name="arte"
+              value="modelo"
+              checked={values.artStyle === "modelo"}
+              onChange={() => update({ ...values, artStyle: "modelo" })}
+              className="size-5 accent-foreground"
+            />
+            <span>
+              <span className="block font-medium">Modelo pronto</span>
+              <span className="text-sm text-foreground/70">Como na prévia, ajustado pela nossa equipe</span>
+            </span>
+          </label>
+          <label className={optionClass}>
+            <input
+              type="radio"
+              name="arte"
+              value="designer"
+              checked={values.artStyle === "designer"}
+              onChange={() => update({ ...values, artStyle: "designer" })}
+              className="size-5 accent-foreground"
+            />
+            <span>
+              <span className="block font-medium">{SERVICES.designer.label}</span>
+              <span className="text-sm text-foreground/70">
+                {SERVICES.designer.summary} {SERVICE_PRICE_NOTE}.
+              </span>
+            </span>
+          </label>
+          {values.artStyle === "designer" && (
+            <TextField
+              id="notas-designer"
+              label="Como você imagina a arte? (opcional)"
+              hint={`Cores da marca, estilo, referências. Até ${DESIGNER_NOTES_MAX} caracteres.`}
+              multiline
+              value={values.designerNotes}
+              onValueChange={(designerNotes) => update({ ...values, designerNotes })}
+              error={errors.designerNotes}
+            />
+          )}
+        </fieldset>
+
         <div className="flex flex-col gap-3 border-t border-foreground/15 pt-6">
           {size && (
             <p>
               Valor por unidade: <strong className="font-semibold">{formatPrice(size.priceCents)}</strong>
+              {values.artStyle === "designer" && (
+                <span className="block text-sm text-foreground/70">
+                  {SERVICES.designer.label}: {SERVICE_PRICE_NOTE.toLowerCase()}.
+                </span>
+              )}
             </p>
           )}
           <button type="submit" className={primaryButtonClass}>

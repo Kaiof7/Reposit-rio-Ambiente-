@@ -1,5 +1,7 @@
 import { CATALOG_PRICES_ARE_EXAMPLES, MODELS } from "@/catalog/models";
 import { ModelCard } from "@/components/model-card";
+import { SAMPLE_SITES, SERVICES, SERVICE_PRICE_NOTE } from "@/catalog/services";
+import { focusRing } from "@/components/styles";
 
 const STEPS = [
   { title: "Você escolhe o modelo", text: "Avaliação no Google, Pix, Instagram, cardápio ou o link que quiser." },
@@ -72,6 +74,51 @@ export default function Home() {
             <ModelCard key={model.id} model={model} />
           ))}
         </div>
+      </section>
+      <section aria-labelledby="titulo-servicos" className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <h2 id="titulo-servicos" className="text-2xl font-semibold">Ainda não tem site ou perfil no Google?</h2>
+          <p className="max-w-2xl leading-relaxed text-foreground/80">
+            A gente faz junto com a plaquinha. É só marcar no pedido. {SERVICE_PRICE_NOTE}.
+          </p>
+        </div>
+        <ul className="grid gap-4 sm:grid-cols-3">
+          {Object.values(SERVICES).map((service) => (
+            <li key={service.label} className="flex flex-col gap-1 rounded-2xl bg-foreground/5 p-4">
+              <span className="font-semibold">{service.label}</span>
+              <span className="leading-relaxed text-foreground/80">{service.summary}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section id="sites" aria-labelledby="titulo-sites" className="flex scroll-mt-6 flex-col gap-6">
+        <h2 id="titulo-sites" className="text-2xl font-semibold">Sites que já fizemos</h2>
+        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {SAMPLE_SITES.map((site) => (
+            <li key={site.id} className="flex flex-col gap-3 rounded-2xl border border-foreground/15 p-4">
+              <div aria-hidden="true" className="overflow-hidden rounded-xl border border-foreground/15">
+                <div className="flex items-center gap-1.5 bg-foreground/10 px-3 py-2">
+                  <span className="size-2.5 rounded-full bg-foreground/30" />
+                  <span className="size-2.5 rounded-full bg-foreground/30" />
+                  <span className="size-2.5 rounded-full bg-foreground/30" />
+                  <span className="ml-2 truncate text-xs text-foreground/70">{new URL(site.url).hostname}</span>
+                </div>
+                <div className="flex flex-col gap-2 p-4">
+                  <span className="h-3 w-2/3 rounded bg-foreground/20" />
+                  <span className="h-2 w-full rounded bg-foreground/10" />
+                  <span className="h-2 w-5/6 rounded bg-foreground/10" />
+                  <span className="mt-2 h-6 w-28 rounded-full bg-foreground/25" />
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold">{site.name}</h3>
+              <p className="leading-relaxed text-foreground/80">{site.description}</p>
+              <a href={site.url} target="_blank" rel="noopener noreferrer" className={`w-fit underline underline-offset-4 ${focusRing}`}>
+                Ver site<span className="sr-only"> {site.name} (abre em nova aba)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
     </main>
   );

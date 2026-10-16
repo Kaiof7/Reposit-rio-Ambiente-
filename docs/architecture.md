@@ -27,11 +27,14 @@ src/
 │   └── globals.css       # Tailwind e tokens de cor claro/escuro
 ├── catalog/
 │   ├── models.ts         # catálogo tipado: modelos, tamanhos, cores, preços em centavos
+│   ├── services.ts       # serviços extras (site, Google, arte sob medida) e sites da vitrine
 │   └── models.test.ts
 ├── components/
 │   ├── order-flow.tsx          # Client Component: estado do pedido e navegação entre etapas
 │   ├── customize-form.tsx      # etapa 1: escolhas, textos, logo e prévia
-│   ├── nfc-link-step.tsx       # etapa 2: destino e link do chip, ajuda do Google
+│   ├── nfc-link-step.tsx       # etapa 2: destino e link do chip, ajuda do Google, "ainda não tenho"
+│   ├── service-details-step.tsx # etapa condicional: dados para criar site e/ou cadastro no Google
+│   ├── text-field.tsx          # campo de texto/área com rótulo, dica e erro ligados
 │   ├── styles.ts               # classes Tailwind compartilhadas dos controles
 │   ├── model-card.tsx          # card do modelo com tamanhos, "a partir de" e Personalizar
 │   └── plaque-illustration.tsx # ilustração/prévia da plaquinha (cor, formato, logo)
@@ -40,6 +43,8 @@ src/
 │   ├── customization.test.ts
 │   ├── nfc.ts                  # destinos, normalização do link e schema Zod do chip
 │   ├── nfc.test.ts
+│   ├── services.ts             # schema Zod dos dados dos serviços extras, validação só dos pedidos
+│   ├── services.test.ts
 │   └── field-errors.ts         # primeira mensagem por campo a partir de um ZodError
 └── lib/
     ├── env-schema.ts     # schemas Zod de ambiente e parseEnv sem vazar valores
@@ -55,11 +60,11 @@ eslint-rules/             # regras locais quality/* e baseline Next compartilhad
 scripts/verify-quality-rules.mjs  # self-check das regras (RuleTester)
 ```
 
-Implementado: fluxos 1 (vitrine), 2 (personalização) e 3 (link do chip). Fluxos 4 a 7 ainda não existem no código.
+Implementado: fluxos 1 (vitrine), 2 (personalização), 3 (link do chip), 8 (serviços extras, no chip) e 9 (vitrine de sites). Fluxos 4 a 7 ainda não existem no código.
 
 ## Fronteiras e fluxo
 
-Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. `/personalizar` é renderizada sob demanda (lê `searchParams`) e entrega `OrderFlow`, o Client Component que guarda o estado de todas as etapas no navegador; cada etapa valida com seu schema (`customizationSchema`, `nfcSchema`) antes de avançar. Planejado: destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
+Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. `/personalizar` é renderizada sob demanda (lê `searchParams`) e entrega `OrderFlow`, o Client Component que guarda o estado de todas as etapas no navegador; cada etapa valida com seu schema (`customizationSchema`, `nfcSchema`, `validateServiceDetails`) antes de avançar. A lista de etapas é derivada do estado: a etapa de serviços só existe quando o cliente pede criação de site ou cadastro no Google. Planejado: destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
 
 Implementado: `src/lib/env.ts` e `src/lib/logger.ts` importam `server-only` e falham se usados no cliente. `src/lib/public-env.ts` não tem `server-only` porque o número é lido no navegador; acessa a variável pelo nome literal para o Next embutir o valor no build.
 
@@ -83,6 +88,8 @@ Motivos: o fechamento é manual no WhatsApp, não há painel para ler pedidos, e
 | Ilustração CSS/SVG no lugar de fotos | Não há fotos reais; a mesma peça é a prévia da personalização, dimensionada em `cqw` | Imagens de banco | Fotos reais disponíveis |
 | Etapas no mesmo Client Component, sem rota por etapa | Estado único em memória, voltar não perde nada, sem persistência | Uma rota por etapa com estado na URL | Precisar compartilhar ou retomar um pedido |
 | Link do chip normalizado (`https://` em domínio puro, `@perfil` → link do Instagram) e restrito a http(s) com domínio | Cliente pouco técnico cola links incompletos; bloqueia `javascript:`/`mailto:` | Exigir URL completa | Chip definido com limite de tamanho |
+| Serviços extras como dados no catálogo, sem preço | Preços indefinidos; o fechamento é no WhatsApp | Preço fixo no site | Vendedor definir valores |
+| Vitrine de sites com ilustração de navegador | O domínio de exemplo não foi acessível no ambiente de desenvolvimento para captura | Captura de tela em `public/` | Captura real disponível |
 | Estado da personalização só em memória no cliente | Sem persistência; recarregar a página recomeça (exceto o modelo, vindo de `?modelo=`) | URL com todos os campos ou `localStorage` | Clientes perderem dados com frequência |
 | QR code gerado no navegador (biblioteca a escolher na tarefa do fluxo 4) | Pré-visualização apenas; nada sai do navegador | Serviço externo de QR | — |
 
