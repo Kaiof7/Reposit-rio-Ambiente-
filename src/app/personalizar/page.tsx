@@ -2,11 +2,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MODELS, findModel } from "@/catalog/models";
 import { OrderFlow } from "@/components/order-flow";
+import { getWhatsAppNumber } from "@/lib/public-env";
 
 export const metadata: Metadata = {
   title: "Monte sua plaquinha | Plaquinhas NFC",
   description: "Escolha modelo, tamanho e cor, veja a prévia da plaquinha e informe o link gravado no chip.",
 };
+
+// Read on the server per request, so the number can change without a new
+// build. A missing or invalid value shows a notice instead of a broken link.
+function sellerWhatsApp() {
+  try {
+    return getWhatsAppNumber();
+  } catch {
+    return null;
+  }
+}
 
 export default async function CustomizePage(props: PageProps<"/personalizar">) {
   const { modelo } = await props.searchParams;
@@ -22,7 +33,7 @@ export default async function CustomizePage(props: PageProps<"/personalizar">) {
         <p className="text-foreground/80">Em poucas etapas, sem cadastro. A arte final é feita pela nossa equipe.</p>
       </div>
       {/* key resets the flow when the model in the URL changes. */}
-      <OrderFlow key={model.id} initialModelId={model.id} />
+      <OrderFlow key={model.id} initialModelId={model.id} whatsappNumber={sellerWhatsApp()} />
     </main>
   );
 }

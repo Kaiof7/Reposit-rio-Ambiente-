@@ -72,7 +72,9 @@ Hipóteses reversíveis (podem mudar sem retrabalho grande):
 
 - **Catálogo, tamanhos, cores e preços "a partir de": a definir.** O código usará valores de exemplo, marcados como tal, até o vendedor informar os reais.
 - **Fotos dos modelos: a definir.** Até existirem fotos reais, a vitrine usa ilustrações/placeholders identificados.
-- Quantidade mínima por pedido: 1; máxima de exemplo, a definir com o vendedor.
+- Quantidade por pedido: de 1 a 100 (máximo de exemplo, a definir com o vendedor); acima disso o cliente explica nas observações.
+- CEP é opcional; cidade é obrigatória.
+- O resumo mostra exatamente a mensagem enviada. Se o WhatsApp abrir sem texto ou não abrir, o cliente usa "Copiar mensagem". Sem número configurado, o botão do WhatsApp some e aparece um aviso.
 - O QR code Pix da pré-visualização segue o formato BR Code estático (Pix "copia e cola") sem valor fixo, montado no navegador com chave, nome (até 25 caracteres, sem acentos) e cidade (até 15) do recebedor. A arte final continua a cargo do vendedor.
 - No modelo Pix, a etapa do QR code já começa com "QR code do Pix" marcado; nos demais, com "Não, só o chip".
 - Texto da ajuda para achar o link de avaliação do Google: redigido a partir da documentação pública do Google Perfil da Empresa, a revisar pelo vendedor.
@@ -106,7 +108,7 @@ Técnicos:
 
 ## Próxima entrega
 
-Dados do pedido e envio pelo WhatsApp (fluxos 5 e 6): etapa com nome, telefone/WhatsApp, cidade/CEP, quantidade e observações validados com Zod; resumo de tudo (arte, chip, QR code, serviços extras e dados) e botão que abre `wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>` com a mensagem organizada. Critério: a mensagem contém todas as escolhas, sem dados salvos no site; número não configurado mostra aviso claro; `pnpm check` verde.
+Páginas de apoio (fluxo 7): perguntas frequentes (funciona em iPhone e Android? precisa de app? dá para trocar o link depois?) e contato, com links no topo/rodapé. Respostas que dependem do vendedor ficam marcadas como pendentes. Critério: páginas acessíveis pelo celular, sem erro no console, `pnpm check` verde.
 
 ## Manutenção
 

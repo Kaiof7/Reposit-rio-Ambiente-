@@ -77,7 +77,7 @@ Recursos temporários: clone do toolkit, scaffold e logs no diretório de rascun
 - Decisões do vendedor: preços, fotos, número de WhatsApp, respostas do FAQ, contato, hospedagem (ver `PRODUCT.md`).
 - Advisory de `braces`: reavaliar quando houver versão corrigida ou novo `eslint-config-next`.
 
-Fluxos 1 a 4, serviços extras e vitrine de sites entregues em 16/10/2026; evidências em `docs/design.md`. Dependências adicionadas: `qrcode-generator` 2.0.4 (produção) e `jsqr` 1.4.0 (desenvolvimento). Próxima tarefa do MVP: dados do pedido e envio pelo WhatsApp (fluxos 5 e 6), descrita em `PRODUCT.md`.
+Fluxos 1 a 4, serviços extras e vitrine de sites entregues em 16/10/2026; evidências em `docs/design.md`. Dependências adicionadas: `qrcode-generator` 2.0.4 (produção) e `jsqr` 1.4.0 (desenvolvimento). Fluxos 5 e 6 (dados e envio pelo WhatsApp) também entregues; o teste de ponta a ponta usou um número fictício só na variável de ambiente do processo de teste, sem versionar. Próxima tarefa do MVP: páginas de apoio (fluxo 7), descrita em `PRODUCT.md`.
 
 Revisão sugerida após essa entrega: **3 ciclos** de code review (escopo pequeno, sem dados sensíveis ainda), focos: (1) acessibilidade e mobile da vitrine, (2) tipagem do catálogo e Server/Client boundaries, (3) integração e checks. Prompt:
 

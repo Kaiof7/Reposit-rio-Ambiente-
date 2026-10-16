@@ -7,16 +7,21 @@ import { CustomizeForm } from "@/components/customize-form";
 import { NfcLinkStep } from "@/components/nfc-link-step";
 import { QrCodeStep, type ChipTarget } from "@/components/qr-code-step";
 import { ServiceDetailsStep } from "@/components/service-details-step";
+import { CustomerStep } from "@/components/customer-step";
+import { SummaryStep } from "@/components/summary-step";
+import { assembleOrder } from "@/order/assemble";
+import { emptyCustomer } from "@/order/customer";
+import { buildOrderMessage } from "@/order/message";
 import { initialCustomization, type CustomizationInput } from "@/order/customization";
 import { defaultDestinationFor, nfcSchema, type NfcInput } from "@/order/nfc";
 import { initialQr, qrSchema, type QrInput } from "@/order/qr";
 import { emptyServiceDetails, type DetailsService } from "@/order/services";
 
-type StepId = "arte" | "link" | "qr" | "servicos";
+type StepId = "arte" | "link" | "qr" | "servicos" | "dados" | "resumo";
 
 const qrFor = (modelId: ModelId): QrInput => ({ ...initialQr, mode: modelId === "pix" ? "pix" : "nenhum" });
 
-export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
+export function OrderFlow({ initialModelId, whatsappNumber }: { initialModelId: ModelId; whatsappNumber: string | null }) {
   const [stepId, setStepId] = useState<StepId>("arte");
   const [customization, setCustomization] = useState(() => initialCustomization(initialModelId));
   const [nfc, setNfc] = useState<NfcInput>(() => ({
@@ -26,7 +31,7 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
   }));
   const [qr, setQr] = useState(() => qrFor(initialModelId));
   const [serviceDetails, setServiceDetails] = useState(emptyServiceDetails);
-  const [status, setStatus] = useState("");
+  const [customer, setCustomer] = useState(emptyCustomer);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const navigated = useRef(false);
   const qrTouched = useRef(false);
@@ -49,6 +54,8 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
     { id: "link", title: "Link do chip" },
     { id: "qr", title: "QR code" },
     ...(services.length > 0 ? [{ id: "servicos" as const, title: services.map((id) => SERVICES[id].label).join(" e ") }] : []),
+    { id: "dados", title: "Seus dados" },
+    { id: "resumo", title: "Resumo do pedido" },
   ];
   const index = Math.max(0, steps.findIndex((step) => step.id === stepId));
   const step = steps[index];
@@ -61,14 +68,12 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
 
   function goTo(next: StepId) {
     navigated.current = true;
-    setStatus("");
     setStepId(next);
   }
 
   function next() {
     const following = steps[index + 1];
     if (following) goTo(following.id);
-    else setStatus("Tudo certo até aqui. A próxima etapa, seus dados para o pedido, chega em breve.");
   }
 
   function changeCustomization(value: CustomizationInput) {
@@ -78,6 +83,8 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
     if (!qrTouched.current) setQr(qrFor(value.modelId));
   }
 
+  const order = step.id === "resumo" ? assembleOrder({ customization, nfc, qr, serviceDetails, customer }, services) : null;
+  const unitPrice = MODELS.find((candidate) => candidate.id === customization.modelId)?.sizes.find((size) => size.id === customization.sizeId);
   const model = MODELS.find((candidate) => candidate.id === customization.modelId) ?? MODELS[0];
   const sizeLabel = SIZES[customization.sizeId as keyof typeof SIZES]?.label;
   const back = () => goTo(steps[index - 1].id);
@@ -103,10 +110,7 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
       {step.id === "link" && (
         <NfcLinkStep
           values={nfc}
-          onChange={(value) => {
-            setNfc(value);
-            setStatus("");
-          }}
+          onChange={setNfc}
           onBack={back}
           onNext={next}
         />
@@ -118,8 +122,7 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
           onChange={(value) => {
             qrTouched.current = true;
             setQr(value);
-            setStatus("");
-          }}
+                  }}
           onBack={back}
           onNext={next}
         />
@@ -128,16 +131,24 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
         <ServiceDetailsStep
           services={services}
           values={serviceDetails}
-          onChange={(value) => {
-            setServiceDetails(value);
-            setStatus("");
-          }}
+          onChange={setServiceDetails}
           onBack={back}
           onNext={next}
         />
       )}
+      {step.id === "dados" && (
+        <CustomerStep
+          values={customer}
+          unitPriceCents={unitPrice?.priceCents ?? null}
+          onChange={setCustomer}
+          onBack={back}
+          onNext={next}
+        />
+      )}
+      {step.id === "resumo" && (
+        <SummaryStep message={order ? buildOrderMessage(order) : null} whatsappNumber={whatsappNumber} onBack={back} />
+      )}
 
-      <p role="status" className="text-sm">{status}</p>
     </section>
   );
 }

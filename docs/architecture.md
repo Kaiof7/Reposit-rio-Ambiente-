@@ -35,6 +35,8 @@ src/
 │   ├── nfc-link-step.tsx       # etapa 2: destino e link do chip, ajuda do Google, "ainda não tenho"
 │   ├── qr-code-step.tsx        # etapa 3: QR code opcional (Pix ou link) com prévia
 │   ├── qr-preview.tsx          # SVG do QR code (preto no branco nos dois temas)
+│   ├── customer-step.tsx       # dados do cliente, quantidade e valor de referência
+│   ├── summary-step.tsx        # resumo = mensagem exata; Enviar pelo WhatsApp e Copiar
 │   ├── service-details-step.tsx # etapa condicional: dados para criar site e/ou cadastro no Google
 │   ├── text-field.tsx          # campo de texto/área com rótulo, dica e erro ligados
 │   ├── styles.ts               # classes Tailwind compartilhadas dos controles
@@ -49,6 +51,12 @@ src/
 │   ├── pix.test.ts
 │   ├── qr.ts                   # schema Zod da etapa do QR code
 │   ├── qr.test.ts
+│   ├── customer.ts             # schema Zod dos dados do cliente (telefone, CEP, quantidade)
+│   ├── customer.test.ts
+│   ├── assemble.ts             # revalida todas as etapas e monta o pedido
+│   ├── assemble.test.ts
+│   ├── message.ts              # texto da mensagem do WhatsApp e link wa.me
+│   ├── message.test.ts
 │   ├── services.ts             # schema Zod dos dados dos serviços extras, validação só dos pedidos
 │   ├── services.test.ts
 │   └── field-errors.ts         # primeira mensagem por campo a partir de um ZodError
@@ -68,11 +76,13 @@ eslint-rules/             # regras locais quality/* e baseline Next compartilhad
 scripts/verify-quality-rules.mjs  # self-check das regras (RuleTester)
 ```
 
-Implementado: fluxos 1 (vitrine), 2 (personalização), 3 (link do chip), 4 (QR code), 8 (serviços extras) e 9 (vitrine de sites). Fluxos 5 a 7 ainda não existem no código.
+Implementado: fluxos 1 a 6, 8 (serviços extras) e 9 (vitrine de sites). O fluxo 7 (FAQ e contato) ainda não existe no código.
 
 ## Fronteiras e fluxo
 
-Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. `/personalizar` é renderizada sob demanda (lê `searchParams`) e entrega `OrderFlow`, o Client Component que guarda o estado de todas as etapas no navegador; cada etapa valida com seu schema (`customizationSchema`, `nfcSchema`, `qrSchema`, `validateServiceDetails`) antes de avançar. A lista de etapas é derivada do estado: a etapa de serviços só existe quando o cliente pede criação de site ou cadastro no Google, no chip ou no QR code. Planejado: destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
+Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. `/personalizar` é renderizada sob demanda (lê `searchParams`) e entrega `OrderFlow`, o Client Component que guarda o estado de todas as etapas no navegador; cada etapa valida com seu schema (`customizationSchema`, `nfcSchema`, `qrSchema`, `validateServiceDetails`) antes de avançar. A lista de etapas é derivada do estado: a etapa de serviços só existe quando o cliente pede criação de site ou cadastro no Google, no chip ou no QR code. No resumo, `assembleOrder` revalida todas as etapas e `buildOrderMessage` gera o texto; o botão é um link `https://wa.me/<número>?text=<encodeURIComponent(mensagem)>` aberto em nova aba. Nada é enviado ao servidor. Planejado: destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
+
+O número do vendedor é lido por `src/app/personalizar/page.tsx` no servidor, a cada requisição (`getWhatsAppNumber`), e passado como prop ao `OrderFlow`; valor ausente ou inválido vira `null` e o resumo mostra um aviso. Assim a troca do número só exige reiniciar o servidor, sem novo build. O nome continua `NEXT_PUBLIC_*` porque o valor é público por natureza e pode ser lido no cliente se necessário (aí sim embutido no build).
 
 Implementado: `src/lib/env.ts` e `src/lib/logger.ts` importam `server-only` e falham se usados no cliente. `src/lib/public-env.ts` não tem `server-only` porque o número é lido no navegador; acessa a variável pelo nome literal para o Next embutir o valor no build.
 
@@ -98,6 +108,8 @@ Motivos: o fechamento é manual no WhatsApp, não há painel para ler pedidos, e
 | Link do chip normalizado (`https://` em domínio puro, `@perfil` → link do Instagram) e restrito a http(s) com domínio | Cliente pouco técnico cola links incompletos; bloqueia `javascript:`/`mailto:` | Exigir URL completa | Chip definido com limite de tamanho |
 | Serviços extras como dados no catálogo, sem preço | Preços indefinidos; o fechamento é no WhatsApp | Preço fixo no site | Vendedor definir valores |
 | Vitrine de sites com ilustração de navegador | O domínio de exemplo não foi acessível no ambiente de desenvolvimento para captura | Captura de tela em `public/` | Captura real disponível |
+| Resumo exibe a própria mensagem do WhatsApp | O cliente confere exatamente o que será enviado; uma só fonte de texto | Resumo visual separado | — |
+| Número do WhatsApp lido no servidor por requisição | Troca sem rebuild; nenhum número no bundle | Ler `process.env.NEXT_PUBLIC_*` no cliente | Página virar estática |
 | Estado da personalização só em memória no cliente | Sem persistência; recarregar a página recomeça (exceto o modelo, vindo de `?modelo=`) | URL com todos os campos ou `localStorage` | Clientes perderem dados com frequência |
 | QR code gerado no navegador com `qrcode-generator` 2.0.4 | Sem dependências, tipos próprios, MIT; `qrcode` traz `yargs`/`pngjs`; `uqr` ainda é 0.x | Serviço externo de QR (enviaria a chave Pix a terceiros) | — |
 | Payload Pix montado no próprio código | Formato público e curto; testado contra o exemplo do manual do BR Code do Banco Central (CRC `1D3D`) | Biblioteca de Pix | Precisar de QR dinâmico ou valor |
