@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MODELS, SIZES, startingPriceCents } from "./models";
+import { BACKGROUNDS, MODELS, SIZES, findModel, startingPriceCents } from "./models";
 
 describe("catalog", () => {
   it("covers the storefront models with unique URL-safe ids", () => {
@@ -20,6 +20,16 @@ describe("catalog", () => {
         expect(size.priceCents).toBeGreaterThan(0);
       }
     }
+  });
+
+  it("gives each model a known default background", () => {
+    for (const model of MODELS) expect(BACKGROUNDS).toHaveProperty(model.defaultBackgroundId);
+  });
+
+  it("finds models by id and ignores unknown ids", () => {
+    expect(findModel("pix")?.name).toBe("Pix");
+    expect(findModel("nao-existe")).toBeUndefined();
+    expect(findModel(undefined)).toBeUndefined();
   });
 
   it("uses the cheapest size as the starting price", () => {

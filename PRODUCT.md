@@ -93,7 +93,7 @@ Técnicos:
 
 ## Próxima entrega
 
-Personalização do adesivo (fluxo 2): página com escolha de modelo, tamanho e cor, texto do negócio e chamada, aviso de envio do logo e pré-visualização reutilizando `PlaqueIllustration`; cards da vitrine ganham o botão "Personalizar". Critério: no celular, a pré-visualização muda conforme as escolhas, tudo operável por teclado, `pnpm check` verde.
+Destino do NFC (fluxo 3): no lugar da mensagem provisória de "Continuar", etapa para informar o link gravado no chip (avaliação Google, site, Instagram, cardápio ou outro), com validação de URL por Zod e ajuda curta para achar o link de avaliação do Google. Critério: URL inválida mostra erro junto do campo, tudo por teclado no celular, `pnpm check` verde.
 
 ## Manutenção
 

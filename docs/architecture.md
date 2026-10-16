@@ -23,13 +23,18 @@ src/
 ├── app/
 │   ├── layout.tsx        # layout raiz, lang="pt-BR", fonte Geist, metadata
 │   ├── page.tsx          # vitrine: o que é NFC, como funciona, usos e modelos
+│   ├── personalizar/page.tsx # personalização (lê ?modelo=, padrão: primeiro modelo)
 │   └── globals.css       # Tailwind e tokens de cor claro/escuro
 ├── catalog/
-│   ├── models.ts         # catálogo tipado: modelos, tamanhos, preços em centavos
+│   ├── models.ts         # catálogo tipado: modelos, tamanhos, cores, preços em centavos
 │   └── models.test.ts
 ├── components/
-│   ├── model-card.tsx          # card do modelo com tamanhos e "a partir de"
-│   └── plaque-illustration.tsx # ilustração da plaquinha (sem fotos ainda)
+│   ├── customize-form.tsx      # Client Component: escolhas, textos, logo e prévia
+│   ├── model-card.tsx          # card do modelo com tamanhos, "a partir de" e Personalizar
+│   └── plaque-illustration.tsx # ilustração/prévia da plaquinha (cor, formato, logo)
+├── order/
+│   ├── customization.ts        # schema Zod da personalização e regras de troca de modelo
+│   └── customization.test.ts
 └── lib/
     ├── env-schema.ts     # schemas Zod de ambiente e parseEnv sem vazar valores
     ├── env.ts            # ambiente do servidor (LOG_LEVEL), server-only
@@ -44,11 +49,11 @@ eslint-rules/             # regras locais quality/* e baseline Next compartilhad
 scripts/verify-quality-rules.mjs  # self-check das regras (RuleTester)
 ```
 
-Implementado: fluxo 1 (vitrine). Fluxos 2 a 7 ainda não existem no código.
+Implementado: fluxos 1 (vitrine) e 2 (personalização). Fluxos 3 a 7 ainda não existem no código.
 
 ## Fronteiras e fluxo
 
-Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. Planejado: personalização, destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
+Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. `/personalizar` é renderizada sob demanda (lê `searchParams`) e entrega o único Client Component, `CustomizeForm`, que guarda o estado no navegador e valida com `customizationSchema`. Planejado: destino do NFC, destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
 
 Implementado: `src/lib/env.ts` e `src/lib/logger.ts` importam `server-only` e falham se usados no cliente. `src/lib/public-env.ts` não tem `server-only` porque o número é lido no navegador; acessa a variável pelo nome literal para o Next embutir o valor no build.
 
@@ -69,7 +74,8 @@ Motivos: o fechamento é manual no WhatsApp, não há painel para ler pedidos, e
 | `@types/node@22` | Alinha ao runtime Node 22 e ao peer `^22 \|\| >=24` do Vitest 5 | `^20` do scaffold | Mudança de runtime |
 | `@next/env` não instalado | Só era usado pelo `drizzle.config.ts` do template | Instalar alinhado ao Next | Adoção de Drizzle |
 | Preços em centavos inteiros, formatados com `Intl.NumberFormat("pt-BR")` | Evita arredondamento binário | `number` em reais | Houver cálculo de frete ou desconto |
-| Ilustração CSS/SVG no lugar de fotos | Não há fotos reais; a mesma peça servirá à pré-visualização do fluxo 2 | Imagens de banco | Fotos reais disponíveis |
+| Ilustração CSS/SVG no lugar de fotos | Não há fotos reais; a mesma peça é a prévia da personalização, dimensionada em `cqw` | Imagens de banco | Fotos reais disponíveis |
+| Estado da personalização só em memória no cliente | Sem persistência; recarregar a página recomeça (exceto o modelo, vindo de `?modelo=`) | URL com todos os campos ou `localStorage` | Clientes perderem dados com frequência |
 | QR code gerado no navegador (biblioteca a escolher na tarefa do fluxo 4) | Pré-visualização apenas; nada sai do navegador | Serviço externo de QR | — |
 
 Fontes e datas: `docs/setup.md`.

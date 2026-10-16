@@ -1,0 +1,10 @@
+
+> plaquinhas-nfc@0.1.0 start /home/user/Reposit-rio-Ambiente-
+> next start -p 47215
+
+▲ Next.js 16.4.2
+- Local:         http://localhost:47215
+- Network:       http://192.0.2.2:47215
+✓ Ready in 137ms
+✓ Running next.config.ts took 36ms
+ ELIFECYCLE  Command failed.
