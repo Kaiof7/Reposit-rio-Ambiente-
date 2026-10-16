@@ -19,7 +19,7 @@ Variáveis (`.env.example`):
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: número do vendedor, só dígitos, `55` + DDD + número. Peça ao responsável pelo projeto; para testes locais use o seu próprio número. Não versione o valor real.
 - `LOG_LEVEL`: nível do Pino no servidor (`info` por padrão).
 
-`.env.local` é ignorado pelo Git. Variáveis `NEXT_PUBLIC_*` são embutidas no build: reinicie o `pnpm dev` após alterá-las.
+`.env.local` é ignorado pelo Git. Variáveis `NEXT_PUBLIC_*` são embutidas no build: reinicie o `pnpm dev` após alterá-las e, em produção, gere um novo build.
 
 ## Banco
 

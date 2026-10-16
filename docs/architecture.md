@@ -25,7 +25,7 @@ src/
 │   ├── page.tsx          # vitrine: o que é NFC, como funciona, usos e modelos
 │   ├── personalizar/page.tsx # pedido em etapas (lê ?modelo=, padrão: primeiro modelo)
 │   ├── perguntas-frequentes/page.tsx # FAQ estático
-│   ├── contato/page.tsx     # WhatsApp da loja, lido por requisição (connection())
+│   ├── contato/page.tsx     # WhatsApp da loja; renderizada por requisição (connection())
 │   └── globals.css       # Tailwind e tokens de cor claro/escuro
 ├── catalog/
 │   ├── models.ts         # catálogo tipado: modelos, tamanhos, cores, preços em centavos
@@ -85,7 +85,7 @@ Implementado: fluxos 1 a 9 do PRODUCT.md.
 
 Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. `/personalizar` é renderizada sob demanda (lê `searchParams`) e entrega `OrderFlow`, o Client Component que guarda o estado de todas as etapas no navegador; cada etapa valida com seu schema (`customizationSchema`, `nfcSchema`, `qrSchema`, `validateServiceDetails`) antes de avançar. A lista de etapas é derivada do estado: a etapa de serviços só existe quando o cliente pede criação de site ou cadastro no Google, no chip ou no QR code. No resumo, `assembleOrder` revalida todas as etapas e `buildOrderMessage` gera o texto; o botão é um link `https://wa.me/<número>?text=<encodeURIComponent(mensagem)>` aberto em nova aba. Nada é enviado ao servidor. Planejado: destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
 
-O número do vendedor é lido no servidor, a cada requisição, por `src/app/personalizar/page.tsx` e `src/app/contato/page.tsx` (`findWhatsAppNumber`, que devolve `null` se ausente ou inválido; o contato usa `connection()` para não ser pré-renderizado no build), e passado como prop ao `OrderFlow`; valor ausente ou inválido vira `null` e o resumo mostra um aviso. Assim a troca do número só exige reiniciar o servidor, sem novo build. O nome continua `NEXT_PUBLIC_*` porque o valor é público por natureza e pode ser lido no cliente se necessário (aí sim embutido no build).
+O número do vendedor é lido no servidor por `src/app/personalizar/page.tsx` e `src/app/contato/page.tsx` (`findWhatsAppNumber`, que devolve `null` se ausente ou inválido) e passado como prop ao `OrderFlow`; com `null`, o resumo e o contato mostram um aviso. As duas páginas são renderizadas por requisição (`searchParams` e `connection()`). Atenção: o Next substitui `process.env.NEXT_PUBLIC_*` pelo valor do momento do `next build`, inclusive no servidor. Valor definido no build fica fixo até o próximo build (verificado em 16/10/2026: build com um número e servidor iniciado com outro mostrou o do build); sem valor no build, o número é lido na execução. Na prática, trocar o número exige novo build. O nome `NEXT_PUBLIC_*` segue o pedido do produto (valor público por natureza).
 
 Implementado: `src/lib/env.ts` e `src/lib/logger.ts` importam `server-only` e falham se usados no cliente. `src/lib/public-env.ts` não tem `server-only` porque o número é lido no navegador; acessa a variável pelo nome literal para o Next embutir o valor no build.
 
@@ -112,7 +112,7 @@ Motivos: o fechamento é manual no WhatsApp, não há painel para ler pedidos, e
 | Serviços extras como dados no catálogo, sem preço | Preços indefinidos; o fechamento é no WhatsApp | Preço fixo no site | Vendedor definir valores |
 | Vitrine de sites com ilustração de navegador | O domínio de exemplo não foi acessível no ambiente de desenvolvimento para captura | Captura de tela em `public/` | Captura real disponível |
 | Resumo exibe a própria mensagem do WhatsApp | O cliente confere exatamente o que será enviado; uma só fonte de texto | Resumo visual separado | — |
-| Número do WhatsApp lido no servidor por requisição | Troca sem rebuild; nenhum número no bundle | Ler `process.env.NEXT_PUBLIC_*` no cliente | Página virar estática |
+| Número do WhatsApp lido no servidor e passado como prop | Uma fonte (`findWhatsAppNumber`), aviso quando ausente; o número aparece no HTML, o que é esperado por ser público | Ler `process.env.NEXT_PUBLIC_*` em Client Component | Precisar trocar o número sem novo build: renomear para variável sem `NEXT_PUBLIC_` |
 | Estado da personalização só em memória no cliente | Sem persistência; recarregar a página recomeça (exceto o modelo, vindo de `?modelo=`) | URL com todos os campos ou `localStorage` | Clientes perderem dados com frequência |
 | QR code gerado no navegador com `qrcode-generator` 2.0.4 | Sem dependências, tipos próprios, MIT; `qrcode` traz `yargs`/`pngjs`; `uqr` ainda é 0.x | Serviço externo de QR (enviaria a chave Pix a terceiros) | — |
 | Payload Pix montado no próprio código | Formato público e curto; testado contra o exemplo do manual do BR Code do Banco Central (CRC `1D3D`) | Biblioteca de Pix | Precisar de QR dinâmico ou valor |

@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ContactPage() {
-  // Read the seller number per request, like the order page.
+  // Render per request so a number set only at runtime is still read (a value
+  // present at build time is inlined by Next and wins; see public-env.ts).
   await connection();
   const whatsapp = findWhatsAppNumber();
 
@@ -34,14 +35,14 @@ export default async function ContactPage() {
           <p className="text-sm text-foreground/70">{formatPhone(whatsapp.slice(2))}</p>
         </div>
       ) : (
-        <p role="alert" className="rounded-xl bg-foreground/5 p-3 leading-relaxed">
+        <p className="rounded-xl bg-foreground/5 p-3 leading-relaxed">
           O WhatsApp da loja ainda não foi configurado neste site.
         </p>
       )}
       <p className="leading-relaxed">
-        Já sabe o que quer?{" "}
+        Se já sabe o que quer,{" "}
         <Link href="/personalizar" className={`underline underline-offset-4 ${focusRing}`}>
-          Monte sua plaquinha
+          monte sua plaquinha
         </Link>{" "}
         e envie o pedido pronto. Veja também as{" "}
         <Link href="/perguntas-frequentes" className={`underline underline-offset-4 ${focusRing}`}>

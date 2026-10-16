@@ -47,7 +47,7 @@ export function SummaryStep({ message, whatsappNumber, onBack }: SummaryStepProp
       </div>
 
       {!whatsappNumber && (
-        <p role="alert" className="rounded-xl bg-foreground/5 p-3 text-sm leading-relaxed">
+        <p className="rounded-xl bg-foreground/5 p-3 text-sm leading-relaxed">
           O WhatsApp da loja ainda não foi configurado neste site. Copie a mensagem e envie para a loja pelo seu
           WhatsApp.
         </p>

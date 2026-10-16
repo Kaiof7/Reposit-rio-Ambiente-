@@ -63,7 +63,7 @@ export function QrCodeStep({ values, chip, onChange, onBack, onNext }: QrCodeSte
       <div className="flex max-w-2xl flex-col gap-8 lg:col-start-1">
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-2 text-lg font-semibold">Quer um QR code impresso na plaquinha?</legend>
-          <p className="mb-1 text-sm text-foreground/70">Bom para quem tem celular sem NFC: é só apontar a câmera.</p>
+          <p className="mb-1 text-sm text-foreground/70">Bom para quem tem celular sem NFC. O QR de um link abre pela câmera; o do Pix, pelo app do banco.</p>
           <label className={optionClass}>
             {radio("qr", values.mode === "nenhum", () => onChange({ ...values, mode: "nenhum" }))}
             Não, só o chip

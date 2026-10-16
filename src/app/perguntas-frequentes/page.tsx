@@ -13,12 +13,12 @@ const QUESTIONS = [
   {
     question: "Funciona em iPhone e Android?",
     answer:
-      "Funciona na maioria dos celulares recentes. No iPhone XS ou mais novo, basta aproximar o topo do celular da plaquinha. No Android, o NFC precisa estar ligado nas configurações e o celular aproximado pelas costas. Para quem tem celular sem NFC, a plaquinha pode ter um QR code impresso: é só apontar a câmera.",
+      "Funciona em celulares com NFC. No iPhone XS ou mais novo, com a tela ligada, encoste o topo do celular na plaquinha. Do iPhone 7 ao X, abra o leitor de NFC na Central de Controle. No Android, ligue o NFC nas configurações e encoste a parte de trás do celular. Quem não tem NFC pode usar o QR code impresso, se a plaquinha tiver um.",
   },
   {
     question: "Precisa de algum aplicativo?",
     answer:
-      "Não. O celular abre o link sozinho, direto no navegador ou no app certo (Google, Instagram, banco). Seu cliente não precisa instalar nada.",
+      "Não. O celular abre o link gravado no chip no navegador ou no app ligado a ele, como Google Maps ou Instagram. O QR code de um link abre pela câmera. Já o QR code do Pix é lido no app do banco, como qualquer Pix.",
   },
   {
     question: "Dá para trocar o link depois?",
@@ -55,9 +55,9 @@ export default function FaqPage() {
         ))}
       </div>
       <p className="leading-relaxed">
-        Ficou alguma dúvida?{" "}
+        Para outras dúvidas,{" "}
         <Link href="/contato" className={`underline underline-offset-4 ${focusRing}`}>
-          Fale com a gente
+          fale com a gente
         </Link>
         .
       </p>
