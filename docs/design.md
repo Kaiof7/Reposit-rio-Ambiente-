@@ -54,3 +54,9 @@ Code review das páginas de apoio (16/10/2026, 3 ciclos):
 1. Textos: o FAQ dizia que o chip abria o "app do banco" e que o QR "é só apontar a câmera"; o QR do Pix é lido no app do banco, não pela câmera. Corrigido no FAQ e na etapa do QR code. Compatibilidade NFC reescrita sem "maioria dos celulares", incluindo iPhone 7 a X pela Central de Controle. Perguntas retóricas trocadas por frases diretas.
 2. Acessibilidade: link "Pular para o conteúdo" (primeiro Tab, leva o foco a `#conteudo`), `aria-current="page"` no cabeçalho (componente cliente pequeno com `usePathname`), avisos fixos sem `role="alert"`, `theme-color` claro/escuro. Sem rolagem horizontal em 320 px nas quatro rotas.
 3. Integração: o número do WhatsApp fica fixo no valor do `next build` quando definido nele (teste: build com um número, servidor com outro, a página mostrou o do build); documentação e comentários corrigidos. Regressão de ponta a ponta do pedido sem mudanças de comportamento.
+
+Segunda rodada de code review (16/10/2026, 3 ciclos):
+
+1. Navegação e layout: no celular, a prévia fixa da personalização cobria o campo focado ao voltar com Shift+Tab ("Nome do negócio" sob a prévia). Corrigido com `scroll-padding-top: 12rem` no `html` apenas quando a prévia fixa existe e abaixo de `lg` (`globals.css`, atributo `data-sticky-preview`); retestado sem campos cobertos e com o foco de erro visível. Link de pular, `aria-current` e `theme-color` sem achados.
+2. Textos em celular real: não executado (sem aparelho com NFC neste ambiente). Revisão das afirmações levou a explicar que o botão do leitor de NFC dos iPhones 7 a X pode precisar ser adicionado à Central de Controle. Teste físico segue pendente.
+3. Documentação da variável: `PRODUCT.md` agora diz que o número precisa estar definido antes do build.

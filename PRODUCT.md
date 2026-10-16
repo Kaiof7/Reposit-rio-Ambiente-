@@ -86,7 +86,7 @@ Pendências que dependem do vendedor (não inventar):
 - **Preços e prazos dos serviços extras** (site, cadastro no Google, arte sob medida): o site mostra "Valor combinado pelo WhatsApp" até serem definidos.
 - **Descrição e imagem dos sites da vitrine:** o ambiente de desenvolvimento não acessou https://orcamento-assistencia-celular.vercel.app; a descrição atual ("Site de orçamento para uma assistência de celulares") foi deduzida do endereço e precisa ser confirmada. A vitrine usa uma ilustração de navegador até haver captura de tela real.
 
-- Número real de WhatsApp para `NEXT_PUBLIC_WHATSAPP_NUMBER` (configurado só no ambiente de deploy).
+- Número real de WhatsApp para `NEXT_PUBLIC_WHATSAPP_NUMBER`, configurado só no ambiente de deploy e definido antes do build: o Next fixa o valor no `next build`, então trocar o número exige novo build.
 - Respostas oficiais do FAQ quanto a regravação do chip ("dá para trocar o link depois?"), prazos de produção e frete. Hoje o FAQ responde de forma neutra ("depende de como o chip é gravado"; prazo e entrega combinados pelo WhatsApp).
 - Compatibilidade NFC citada no FAQ (iPhone XS ou mais novo sem app; Android com NFC ligado): baseada em conhecimento geral, a confirmar com testes nos chips usados.
 - Outros canais de contato (e-mail, Instagram, endereço): a página de contato mostra só o WhatsApp configurado.

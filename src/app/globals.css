@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+/* Keep focused fields clear of the sticky plaque preview on mobile
+   (customize-form.tsx); from lg the preview sits in a side column. */
+@media (width < 64rem) {
+  html:has([data-sticky-preview]) {
+    scroll-padding-top: 12rem;
+  }
+}

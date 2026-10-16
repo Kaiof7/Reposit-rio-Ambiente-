@@ -13,7 +13,7 @@ const QUESTIONS = [
   {
     question: "Funciona em iPhone e Android?",
     answer:
-      "Funciona em celulares com NFC. No iPhone XS ou mais novo, com a tela ligada, encoste o topo do celular na plaquinha. Do iPhone 7 ao X, abra o leitor de NFC na Central de Controle. No Android, ligue o NFC nas configurações e encoste a parte de trás do celular. Quem não tem NFC pode usar o QR code impresso, se a plaquinha tiver um.",
+      "Funciona em celulares com NFC. No iPhone XS ou mais novo, com a tela ligada, encoste o topo do celular na plaquinha. Do iPhone 7 ao X, toque no botão do leitor de NFC na Central de Controle; se ele não aparecer, adicione-o nos ajustes da Central de Controle. No Android, ligue o NFC nas configurações e encoste a parte de trás do celular. Quem não tem NFC pode usar o QR code impresso, se a plaquinha tiver um.",
   },
   {
     question: "Precisa de algum aplicativo?",

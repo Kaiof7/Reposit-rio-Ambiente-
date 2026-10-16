@@ -74,7 +74,7 @@ export function CustomizeForm({ values, onChange: update, onNext }: CustomizeFor
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_20rem] lg:items-start">
-      <figure className="sticky top-0 z-10 -mx-4 flex items-center gap-4 border-b border-foreground/15 bg-background px-4 py-3 lg:order-last lg:top-8 lg:mx-0 lg:flex-col lg:border-0 lg:p-0">
+      <figure data-sticky-preview className="sticky top-0 z-10 -mx-4 flex items-center gap-4 border-b border-foreground/15 bg-background px-4 py-3 lg:order-last lg:top-8 lg:mx-0 lg:flex-col lg:border-0 lg:p-0">
         <PlaqueIllustration
           className={cn("shrink-0", SIZES[values.sizeId as keyof typeof SIZES]?.shape === "portrait" ? "w-24" : "w-32", "lg:w-full")}
           modelId={values.modelId}
