@@ -37,7 +37,7 @@ export function buildOrderMessage(order: Order) {
   const { customization: art, nfc, qr, services, customer } = order;
   const model = MODELS.find((candidate) => candidate.id === art.modelId);
   const price = orderTotalCents(order);
-  const lines: string[] = ["*Novo pedido: Plaquinhas NFC*", ""];
+  const lines: string[] = ["*Novo pedido: Sua Plaquinha NFC*", ""];
   const section = (title: string, entries: (string | false | null | undefined)[]) => {
     lines.push(`*${title}*`, ...entries.filter((entry): entry is string => Boolean(entry)), "");
   };

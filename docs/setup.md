@@ -4,7 +4,7 @@
 
 - Data da verificação: 16/10/2026.
 - Receita: [Vibe Coding Toolkit](https://github.com/soumatheusgomes/vibe-coding-toolkit), revisão única `f13bb354363dafef8ce8d8f605856cc9e1cc52cc` (15/10/2026), prompt 11 (`docs/prompts/11-next-project-bootstrap.md`). O toolkit foi clonado num diretório temporário fora da aplicação; só templates dessa revisão foram copiados.
-- Produto: Plaquinhas NFC (ver `PRODUCT.md`).
+- Produto: Sua Plaquinha NFC (ver `PRODUCT.md`).
 - Cliente: Claude Code 2.1.301 numa sessão em nuvem (contêiner efêmero, Linux). Modelo e autenticação da sessão preservados; nenhum subagente ou provedor adicional usado.
 - Runtime: Node.js 22.22.0, pnpm 10.28.0.
 - Destino: repositório existente com `README.md` de uma linha e `.git`; scaffold gerado em pasta temporária e incorporado sem sobrescrever.

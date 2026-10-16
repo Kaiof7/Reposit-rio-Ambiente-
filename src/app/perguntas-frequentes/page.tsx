@@ -3,7 +3,7 @@ import Link from "next/link";
 import { focusRing } from "@/components/styles";
 
 export const metadata: Metadata = {
-  title: "Perguntas frequentes | Plaquinhas NFC",
+  title: "Perguntas frequentes | Sua Plaquinha NFC",
   description: "Como funciona a plaquinha NFC no iPhone e no Android, se precisa de app, troca de link, pedido e privacidade.",
 };
 

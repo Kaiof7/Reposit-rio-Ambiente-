@@ -16,7 +16,7 @@ export function SiteHeader() {
     <header className="border-b border-foreground/15">
       <nav aria-label="Principal" className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3">
         <Link href="/" className={`flex min-h-11 items-center font-semibold ${focusRing}`}>
-          Plaquinhas NFC
+          Sua Plaquinha NFC
         </Link>
         <ul className="flex gap-4 text-sm">
           {LINKS.map((link) => (
