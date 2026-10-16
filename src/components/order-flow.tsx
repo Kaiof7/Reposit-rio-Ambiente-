@@ -5,12 +5,16 @@ import { BACKGROUNDS, MODELS, SIZES, type ModelId } from "@/catalog/models";
 import { SERVICES } from "@/catalog/services";
 import { CustomizeForm } from "@/components/customize-form";
 import { NfcLinkStep } from "@/components/nfc-link-step";
+import { QrCodeStep, type ChipTarget } from "@/components/qr-code-step";
 import { ServiceDetailsStep } from "@/components/service-details-step";
 import { initialCustomization, type CustomizationInput } from "@/order/customization";
-import { CREATABLE_DESTINATIONS, defaultDestinationFor, type NfcInput } from "@/order/nfc";
+import { defaultDestinationFor, nfcSchema, type NfcInput } from "@/order/nfc";
+import { initialQr, qrSchema, type QrInput } from "@/order/qr";
 import { emptyServiceDetails, type DetailsService } from "@/order/services";
 
-type StepId = "arte" | "link" | "servicos";
+type StepId = "arte" | "link" | "qr" | "servicos";
+
+const qrFor = (modelId: ModelId): QrInput => ({ ...initialQr, mode: modelId === "pix" ? "pix" : "nenhum" });
 
 export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
   const [stepId, setStepId] = useState<StepId>("arte");
@@ -20,17 +24,30 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
     url: "",
     needsCreation: false,
   }));
+  const [qr, setQr] = useState(() => qrFor(initialModelId));
   const [serviceDetails, setServiceDetails] = useState(emptyServiceDetails);
   const [status, setStatus] = useState("");
   const headingRef = useRef<HTMLHeadingElement>(null);
   const navigated = useRef(false);
+  const qrTouched = useRef(false);
 
   // Services the team will create because the customer has no link yet.
-  const creation = nfc.needsCreation ? CREATABLE_DESTINATIONS[nfc.destination] : undefined;
-  const services: DetailsService[] = creation ? [creation] : [];
+  const chipResult = nfcSchema.safeParse(nfc);
+  const chip: ChipTarget = !chipResult.success ? null
+    : chipResult.data.url ? { url: chipResult.data.url }
+    : chipResult.data.creation ? { creation: chipResult.data.creation }
+    : null;
+  const qrResult = qrSchema.safeParse(qr);
+  const requested = new Set<DetailsService>();
+  if (chip && "creation" in chip) requested.add(chip.creation);
+  if (qrResult.success && qrResult.data.mode === "link" && "creation" in qrResult.data && qrResult.data.creation) {
+    requested.add(qrResult.data.creation);
+  }
+  const services = (["site", "google"] as const).filter((id) => requested.has(id));
   const steps: { id: StepId; title: string }[] = [
     { id: "arte", title: "Arte do adesivo" },
     { id: "link", title: "Link do chip" },
+    { id: "qr", title: "QR code" },
     ...(services.length > 0 ? [{ id: "servicos" as const, title: services.map((id) => SERVICES[id].label).join(" e ") }] : []),
   ];
   const index = Math.max(0, steps.findIndex((step) => step.id === stepId));
@@ -51,13 +68,14 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
   function next() {
     const following = steps[index + 1];
     if (following) goTo(following.id);
-    else setStatus("Tudo certo até aqui. A próxima etapa, o QR code opcional, chega em breve.");
+    else setStatus("Tudo certo até aqui. A próxima etapa, seus dados para o pedido, chega em breve.");
   }
 
   function changeCustomization(value: CustomizationInput) {
     setCustomization(value);
     // Until a link is typed, the destination follows the chosen model.
     if (!nfc.url.trim() && !nfc.needsCreation) setNfc({ ...nfc, destination: defaultDestinationFor(value.modelId) });
+    if (!qrTouched.current) setQr(qrFor(value.modelId));
   }
 
   const model = MODELS.find((candidate) => candidate.id === customization.modelId) ?? MODELS[0];
@@ -87,6 +105,19 @@ export function OrderFlow({ initialModelId }: { initialModelId: ModelId }) {
           values={nfc}
           onChange={(value) => {
             setNfc(value);
+            setStatus("");
+          }}
+          onBack={back}
+          onNext={next}
+        />
+      )}
+      {step.id === "qr" && (
+        <QrCodeStep
+          values={qr}
+          chip={chip}
+          onChange={(value) => {
+            qrTouched.current = true;
+            setQr(value);
             setStatus("");
           }}
           onBack={back}

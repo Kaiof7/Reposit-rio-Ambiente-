@@ -9,7 +9,7 @@ type TextFieldProps = {
   multiline?: boolean;
   value: string;
   onValueChange: (value: string) => void;
-} & Pick<InputHTMLAttributes<HTMLInputElement>, "autoComplete" | "placeholder">;
+} & Pick<InputHTMLAttributes<HTMLInputElement>, "autoComplete" | "placeholder" | "inputMode">;
 
 // Labelled text input or textarea with hint and error wired for screen readers.
 export function TextField({ id, label, hint, error, multiline, value, onValueChange, ...rest }: TextFieldProps) {

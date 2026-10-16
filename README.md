@@ -2,7 +2,7 @@
 
 Loja online de plaquinhas NFC personalizadas para pequenos negócios brasileiros. O cliente escolhe o modelo, personaliza a arte, informa o link gravado no chip e o QR code opcional, e envia o pedido completo ao vendedor pelo WhatsApp. Detalhes em [PRODUCT.md](PRODUCT.md).
 
-Estado atual: vitrine, personalização (com arte sob medida), link do chip (com pedido de site ou cadastro no Google) e vitrine de sites implementados com catálogo de exemplo; QR code, dados do pedido, envio pelo WhatsApp e páginas de apoio pendentes.
+Estado atual: vitrine, personalização (com arte sob medida), link do chip e QR code opcional (com pedido de site ou cadastro no Google) e vitrine de sites implementados com catálogo de exemplo; dados do pedido, envio pelo WhatsApp e páginas de apoio pendentes.
 
 ## Executar
 
@@ -29,4 +29,4 @@ Não há banco de dados nem credenciais privadas. O número do WhatsApp é públ
 
 ## Próxima entrega
 
-QR code opcional (fluxo 4): etapa para escolher se a plaquinha terá QR code impresso e para onde aponta (chave Pix com tipo, chave e nome do recebedor, ou um link), com validação Zod e pré-visualização do QR code gerado no navegador. Critério: QR legível pela câmera do celular na prévia, Pix no formato BR Code, nada armazenado, `pnpm check` verde. Pendências externas: preços, fotos, número de WhatsApp e respostas do FAQ, a informar pelo vendedor.
+Dados do pedido e envio pelo WhatsApp (fluxos 5 e 6): etapa com nome, telefone/WhatsApp, cidade/CEP, quantidade e observações validados com Zod; resumo de tudo (arte, chip, QR code, serviços extras e dados) e botão que abre `wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>` com a mensagem organizada. Critério: a mensagem contém todas as escolhas, sem dados salvos no site; número não configurado mostra aviso claro; `pnpm check` verde. Pendências externas: preços, fotos, número de WhatsApp e respostas do FAQ, a informar pelo vendedor.

@@ -18,7 +18,7 @@ Objetivo: o cliente escolhe e personaliza a plaquinha sozinho, pelo celular, e c
 1. **Vitrine.** Página inicial explica que a plaquinha NFC abre um link quando o celular se aproxima, mostra exemplos de uso e os modelos disponíveis (avaliação Google, Pix, link/site, Instagram, cardápio) com foto, tamanhos e preço "a partir de". Resultado: o cliente escolhe um modelo e inicia a personalização.
 2. **Personalização do adesivo.** O cliente escolhe modelo, tamanho e cor/fundo, escreve o nome do negócio e a chamada (ex.: "Avalie a gente!") e indica se vai enviar o logo. Uma pré-visualização simples da arte acompanha as escolhas.
 3. **Conteúdo do NFC.** O cliente informa o destino gravado no chip: link de avaliação do Google, site, Instagram, cardápio ou outro link. O site valida se é uma URL válida e mostra uma ajuda curta para encontrar o link de avaliação do Google.
-4. **QR code opcional.** O cliente decide se quer QR code impresso e para onde ele aponta: chave Pix (tipo, chave e nome do recebedor) ou um link. O navegador gera uma pré-visualização do QR code.
+4. **QR code opcional.** O cliente decide se quer QR code impresso e para onde ele aponta: chave Pix (tipo, chave, nome e cidade do recebedor; a cidade é exigida pelo padrão BR Code) ou um link (o mesmo do chip, outro link, ou um site a ser criado pela equipe). O navegador gera uma pré-visualização do QR code.
 5. **Dados do pedido.** Nome, telefone/WhatsApp, cidade/CEP, quantidade e observações, somados às escolhas anteriores. Validação com Zod no cliente, com erro junto do campo.
 6. **Envio pelo WhatsApp.** Ao confirmar, o site mostra um resumo e, em seguida, abre `https://wa.me/<número do vendedor>?text=<mensagem codificada>` com todas as informações organizadas e legíveis.
 7. **Páginas de apoio.** Perguntas frequentes (funciona em iPhone e Android? precisa de app? dá para trocar o link depois?) e contato.
@@ -73,7 +73,8 @@ Hipóteses reversíveis (podem mudar sem retrabalho grande):
 - **Catálogo, tamanhos, cores e preços "a partir de": a definir.** O código usará valores de exemplo, marcados como tal, até o vendedor informar os reais.
 - **Fotos dos modelos: a definir.** Até existirem fotos reais, a vitrine usa ilustrações/placeholders identificados.
 - Quantidade mínima por pedido: 1; máxima de exemplo, a definir com o vendedor.
-- O QR code Pix da pré-visualização segue o formato BR Code estático (Pix "copia e cola"), montado no navegador com tipo/chave/nome do recebedor e cidade do pedido. A arte final continua a cargo do vendedor.
+- O QR code Pix da pré-visualização segue o formato BR Code estático (Pix "copia e cola") sem valor fixo, montado no navegador com chave, nome (até 25 caracteres, sem acentos) e cidade (até 15) do recebedor. A arte final continua a cargo do vendedor.
+- No modelo Pix, a etapa do QR code já começa com "QR code do Pix" marcado; nos demais, com "Não, só o chip".
 - Texto da ajuda para achar o link de avaliação do Google: redigido a partir da documentação pública do Google Perfil da Empresa, a revisar pelo vendedor.
 - Os serviços extras são opcionais e pedidos explicitamente: trocar o destino do chip desmarca o pedido de criação, para não incluir um serviço pago sem intenção.
 - O site aceita domínio sem `https://` e, no Instagram, só o `@perfil`, convertendo para o link completo mostrado ao cliente antes de seguir.
@@ -105,7 +106,7 @@ Técnicos:
 
 ## Próxima entrega
 
-QR code opcional (fluxo 4): etapa para escolher se a plaquinha terá QR code impresso e para onde aponta (chave Pix com tipo, chave e nome do recebedor, ou um link), com validação Zod e pré-visualização do QR code gerado no navegador. Critério: QR legível pela câmera do celular na prévia, Pix no formato BR Code, nada armazenado, `pnpm check` verde.
+Dados do pedido e envio pelo WhatsApp (fluxos 5 e 6): etapa com nome, telefone/WhatsApp, cidade/CEP, quantidade e observações validados com Zod; resumo de tudo (arte, chip, QR code, serviços extras e dados) e botão que abre `wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>` com a mensagem organizada. Critério: a mensagem contém todas as escolhas, sem dados salvos no site; número não configurado mostra aviso claro; `pnpm check` verde.
 
 ## Manutenção
 
