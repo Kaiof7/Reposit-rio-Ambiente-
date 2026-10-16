@@ -2,7 +2,7 @@
 
 Loja online de plaquinhas NFC personalizadas para pequenos negócios brasileiros. O cliente escolhe o modelo, personaliza a arte, informa o link gravado no chip e o QR code opcional, e envia o pedido completo ao vendedor pelo WhatsApp. Detalhes em [PRODUCT.md](PRODUCT.md).
 
-Estado atual: vitrine, personalização (com arte sob medida), link do chip e QR code opcional (com pedido de site ou cadastro no Google) e vitrine de sites, dados do pedido e envio pelo WhatsApp implementados com catálogo de exemplo; páginas de apoio (FAQ e contato) pendentes.
+Estado atual: vitrine, personalização (com arte sob medida), link do chip e QR code opcional (com pedido de site ou cadastro no Google) e vitrine de sites, dados do pedido, envio pelo WhatsApp, perguntas frequentes e contato implementados com catálogo de exemplo. Falta validar pendências com o vendedor (ver PRODUCT.md).
 
 ## Executar
 
@@ -29,4 +29,4 @@ Não há banco de dados nem credenciais privadas. O número do WhatsApp é públ
 
 ## Próxima entrega
 
-Páginas de apoio (fluxo 7): perguntas frequentes (funciona em iPhone e Android? precisa de app? dá para trocar o link depois?) e contato, com links no topo/rodapé. Respostas que dependem do vendedor ficam marcadas como pendentes. Critério: páginas acessíveis pelo celular, sem erro no console, `pnpm check` verde. Pendências externas: preços, fotos, número de WhatsApp e respostas do FAQ, a informar pelo vendedor.
+MVP completo no código. Próximo passo: validar com o vendedor as pendências acima (preços, número de WhatsApp, chip, respostas do FAQ, sites da vitrine), testar um pedido real num celular com o WhatsApp instalado e, com autorização, publicar um preview. Pendências externas: preços, fotos, número de WhatsApp e respostas do FAQ, a informar pelo vendedor.

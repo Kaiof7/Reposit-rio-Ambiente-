@@ -87,8 +87,9 @@ Pendências que dependem do vendedor (não inventar):
 - **Descrição e imagem dos sites da vitrine:** o ambiente de desenvolvimento não acessou https://orcamento-assistencia-celular.vercel.app; a descrição atual ("Site de orçamento para uma assistência de celulares") foi deduzida do endereço e precisa ser confirmada. A vitrine usa uma ilustração de navegador até haver captura de tela real.
 
 - Número real de WhatsApp para `NEXT_PUBLIC_WHATSAPP_NUMBER` (configurado só no ambiente de deploy).
-- Respostas oficiais do FAQ quanto a regravação do chip ("dá para trocar o link depois?"), prazos de produção e frete.
-- Dados de contato exibidos na página de contato.
+- Respostas oficiais do FAQ quanto a regravação do chip ("dá para trocar o link depois?"), prazos de produção e frete. Hoje o FAQ responde de forma neutra ("depende de como o chip é gravado"; prazo e entrega combinados pelo WhatsApp).
+- Compatibilidade NFC citada no FAQ (iPhone XS ou mais novo sem app; Android com NFC ligado): baseada em conhecimento geral, a confirmar com testes nos chips usados.
+- Outros canais de contato (e-mail, Instagram, endereço): a página de contato mostra só o WhatsApp configurado.
 - Modelo do chip NFC usado (ex.: NTAG213, NTAG215). Ele limita o tamanho do link gravado (no NTAG213, cerca de 130 caracteres). Hoje o site não limita o comprimento; quando o chip for definido, o limite entra na validação do link.
 - Hospedagem e domínio (publicação depende de autorização).
 
@@ -108,7 +109,7 @@ Técnicos:
 
 ## Próxima entrega
 
-Páginas de apoio (fluxo 7): perguntas frequentes (funciona em iPhone e Android? precisa de app? dá para trocar o link depois?) e contato, com links no topo/rodapé. Respostas que dependem do vendedor ficam marcadas como pendentes. Critério: páginas acessíveis pelo celular, sem erro no console, `pnpm check` verde.
+MVP completo no código. Próximo passo: validar com o vendedor as pendências acima (preços, número de WhatsApp, chip, respostas do FAQ, sites da vitrine), testar um pedido real num celular com o WhatsApp instalado e, com autorização, publicar um preview.
 
 ## Manutenção
 

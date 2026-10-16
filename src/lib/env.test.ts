@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getLogLevel } from "./env";
-import { getWhatsAppNumber } from "./public-env";
+import { findWhatsAppNumber, getWhatsAppNumber } from "./public-env";
 
 vi.mock("server-only", () => ({}));
 afterEach(() => vi.unstubAllEnvs());
@@ -30,5 +30,12 @@ describe("public environment", () => {
       expect(() => getWhatsAppNumber()).toThrow("NEXT_PUBLIC_WHATSAPP_NUMBER");
       expect(() => getWhatsAppNumber()).not.toThrow(value);
     }
+  });
+
+  it("returns null instead of throwing when the page only needs to know", () => {
+    vi.stubEnv("NEXT_PUBLIC_WHATSAPP_NUMBER", "invalido");
+    expect(findWhatsAppNumber()).toBeNull();
+    vi.stubEnv("NEXT_PUBLIC_WHATSAPP_NUMBER", "5511912345678");
+    expect(findWhatsAppNumber()).toBe("5511912345678");
   });
 });

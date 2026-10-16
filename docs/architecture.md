@@ -24,12 +24,15 @@ src/
 │   ├── layout.tsx        # layout raiz, lang="pt-BR", fonte Geist, metadata
 │   ├── page.tsx          # vitrine: o que é NFC, como funciona, usos e modelos
 │   ├── personalizar/page.tsx # pedido em etapas (lê ?modelo=, padrão: primeiro modelo)
+│   ├── perguntas-frequentes/page.tsx # FAQ estático
+│   ├── contato/page.tsx     # WhatsApp da loja, lido por requisição (connection())
 │   └── globals.css       # Tailwind e tokens de cor claro/escuro
 ├── catalog/
 │   ├── models.ts         # catálogo tipado: modelos, tamanhos, cores, preços em centavos
 │   ├── services.ts       # serviços extras (site, Google, arte sob medida) e sites da vitrine
 │   └── models.test.ts
 ├── components/
+│   ├── site-header.tsx         # cabeçalho com navegação (layout raiz)
 │   ├── order-flow.tsx          # Client Component: estado do pedido e navegação entre etapas
 │   ├── customize-form.tsx      # etapa 1: escolhas, textos, logo e prévia
 │   ├── nfc-link-step.tsx       # etapa 2: destino e link do chip, ajuda do Google, "ainda não tenho"
@@ -76,13 +79,13 @@ eslint-rules/             # regras locais quality/* e baseline Next compartilhad
 scripts/verify-quality-rules.mjs  # self-check das regras (RuleTester)
 ```
 
-Implementado: fluxos 1 a 6, 8 (serviços extras) e 9 (vitrine de sites). O fluxo 7 (FAQ e contato) ainda não existe no código.
+Implementado: fluxos 1 a 9 do PRODUCT.md.
 
 ## Fronteiras e fluxo
 
 Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. `/personalizar` é renderizada sob demanda (lê `searchParams`) e entrega `OrderFlow`, o Client Component que guarda o estado de todas as etapas no navegador; cada etapa valida com seu schema (`customizationSchema`, `nfcSchema`, `qrSchema`, `validateServiceDetails`) antes de avançar. A lista de etapas é derivada do estado: a etapa de serviços só existe quando o cliente pede criação de site ou cadastro no Google, no chip ou no QR code. No resumo, `assembleOrder` revalida todas as etapas e `buildOrderMessage` gera o texto; o botão é um link `https://wa.me/<número>?text=<encodeURIComponent(mensagem)>` aberto em nova aba. Nada é enviado ao servidor. Planejado: destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
 
-O número do vendedor é lido por `src/app/personalizar/page.tsx` no servidor, a cada requisição (`getWhatsAppNumber`), e passado como prop ao `OrderFlow`; valor ausente ou inválido vira `null` e o resumo mostra um aviso. Assim a troca do número só exige reiniciar o servidor, sem novo build. O nome continua `NEXT_PUBLIC_*` porque o valor é público por natureza e pode ser lido no cliente se necessário (aí sim embutido no build).
+O número do vendedor é lido no servidor, a cada requisição, por `src/app/personalizar/page.tsx` e `src/app/contato/page.tsx` (`findWhatsAppNumber`, que devolve `null` se ausente ou inválido; o contato usa `connection()` para não ser pré-renderizado no build), e passado como prop ao `OrderFlow`; valor ausente ou inválido vira `null` e o resumo mostra um aviso. Assim a troca do número só exige reiniciar o servidor, sem novo build. O nome continua `NEXT_PUBLIC_*` porque o valor é público por natureza e pode ser lido no cliente se necessário (aí sim embutido no build).
 
 Implementado: `src/lib/env.ts` e `src/lib/logger.ts` importam `server-only` e falham se usados no cliente. `src/lib/public-env.ts` não tem `server-only` porque o número é lido no navegador; acessa a variável pelo nome literal para o Next embutir o valor no build.
 

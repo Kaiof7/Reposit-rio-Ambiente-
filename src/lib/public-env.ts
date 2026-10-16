@@ -6,3 +6,13 @@ import { parseEnv, whatsappNumberSchema } from "./env-schema";
 export function getWhatsAppNumber() {
   return parseEnv("NEXT_PUBLIC_WHATSAPP_NUMBER", process.env.NEXT_PUBLIC_WHATSAPP_NUMBER, whatsappNumberSchema);
 }
+
+// Read per request on the server, so the number can change without a new
+// build. Missing or invalid: callers show a notice instead of a broken link.
+export function findWhatsAppNumber() {
+  try {
+    return getWhatsAppNumber();
+  } catch {
+    return null;
+  }
+}
