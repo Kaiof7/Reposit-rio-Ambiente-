@@ -2,7 +2,7 @@
 
 Loja online de plaquinhas NFC personalizadas para pequenos negócios brasileiros. O cliente escolhe o modelo, personaliza a arte, informa o link gravado no chip e o QR code opcional, e envia o pedido completo ao vendedor pelo WhatsApp. Detalhes em [PRODUCT.md](PRODUCT.md).
 
-Estado atual: base técnica configurada; os fluxos do MVP ainda não foram implementados.
+Estado atual: vitrine (fluxo 1) implementada com catálogo de exemplo; fluxos 2 a 7 pendentes.
 
 ## Executar
 
@@ -29,4 +29,4 @@ Não há banco de dados nem credenciais privadas. O número do WhatsApp é públ
 
 ## Próxima entrega
 
-Catálogo tipado dos modelos e vitrine da página inicial (fluxo 1 do [PRODUCT.md](PRODUCT.md)). Pendências externas: preços, fotos, número de WhatsApp e respostas do FAQ, a informar pelo vendedor.
+Personalização do adesivo (fluxo 2): página com escolha de modelo, tamanho e cor, texto do negócio e chamada, aviso de envio do logo e pré-visualização reutilizando `PlaqueIllustration`; cards da vitrine ganham o botão "Personalizar". Critério: no celular, a pré-visualização muda conforme as escolhas, tudo operável por teclado, `pnpm check` verde. Pendências externas: preços, fotos, número de WhatsApp e respostas do FAQ, a informar pelo vendedor.

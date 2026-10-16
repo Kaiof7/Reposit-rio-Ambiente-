@@ -22,25 +22,33 @@ Versões efetivas completas: `pnpm-lock.yaml`. Não há ORM nem driver de banco;
 src/
 ├── app/
 │   ├── layout.tsx        # layout raiz, lang="pt-BR", fonte Geist, metadata
-│   ├── page.tsx          # home provisória ("Loja em construção")
+│   ├── page.tsx          # vitrine: o que é NFC, como funciona, usos e modelos
 │   └── globals.css       # Tailwind e tokens de cor claro/escuro
+├── catalog/
+│   ├── models.ts         # catálogo tipado: modelos, tamanhos, preços em centavos
+│   └── models.test.ts
+├── components/
+│   ├── model-card.tsx          # card do modelo com tamanhos e "a partir de"
+│   └── plaque-illustration.tsx # ilustração da plaquinha (sem fotos ainda)
 └── lib/
     ├── env-schema.ts     # schemas Zod de ambiente e parseEnv sem vazar valores
     ├── env.ts            # ambiente do servidor (LOG_LEVEL), server-only
     ├── public-env.ts     # NEXT_PUBLIC_WHATSAPP_NUMBER validado (55 + DDD + número)
     ├── logger.ts         # Pino com redação, server-only
     ├── utils.ts          # cn()
+    ├── format.ts         # formatPrice(centavos) em BRL
+    ├── format.test.ts
     ├── env.test.ts       # testes de ambiente público e do servidor
     └── logger.test.ts    # teste de redação do logger
 eslint-rules/             # regras locais quality/* e baseline Next compartilhada
 scripts/verify-quality-rules.mjs  # self-check das regras (RuleTester)
 ```
 
-Os fluxos do MVP ainda não existem no código.
+Implementado: fluxo 1 (vitrine). Fluxos 2 a 7 ainda não existem no código.
 
 ## Fronteiras e fluxo
 
-Planejado para o MVP (ainda não implementado): a vitrine é renderizada no servidor a partir do catálogo tipado; personalização, destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
+Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. Planejado: personalização, destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
 
 Implementado: `src/lib/env.ts` e `src/lib/logger.ts` importam `server-only` e falham se usados no cliente. `src/lib/public-env.ts` não tem `server-only` porque o número é lido no navegador; acessa a variável pelo nome literal para o Next embutir o valor no build.
 
@@ -60,6 +68,8 @@ Motivos: o fechamento é manual no WhatsApp, não há painel para ler pedidos, e
 | `typecheck` roda `next typegen` antes de `tsc` | `LayoutProps`/`PageProps` são tipos gerados; sem isso `tsc` falha num clone limpo | Depender de `next build` prévio | Next mudar a geração de tipos |
 | `@types/node@22` | Alinha ao runtime Node 22 e ao peer `^22 \|\| >=24` do Vitest 5 | `^20` do scaffold | Mudança de runtime |
 | `@next/env` não instalado | Só era usado pelo `drizzle.config.ts` do template | Instalar alinhado ao Next | Adoção de Drizzle |
+| Preços em centavos inteiros, formatados com `Intl.NumberFormat("pt-BR")` | Evita arredondamento binário | `number` em reais | Houver cálculo de frete ou desconto |
+| Ilustração CSS/SVG no lugar de fotos | Não há fotos reais; a mesma peça servirá à pré-visualização do fluxo 2 | Imagens de banco | Fotos reais disponíveis |
 | QR code gerado no navegador (biblioteca a escolher na tarefa do fluxo 4) | Pré-visualização apenas; nada sai do navegador | Serviço externo de QR | — |
 
 Fontes e datas: `docs/setup.md`.

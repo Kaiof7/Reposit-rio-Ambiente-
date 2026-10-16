@@ -93,7 +93,7 @@ Técnicos:
 
 ## Próxima entrega
 
-Catálogo tipado dos modelos (valores de exemplo marcados) e a vitrine da página inicial (fluxo 1), com teste do catálogo. Critério: a home lista os modelos com tamanhos e preço "a partir de" no celular, sem erro no console, com `pnpm check` verde.
+Personalização do adesivo (fluxo 2): página com escolha de modelo, tamanho e cor, texto do negócio e chamada, aviso de envio do logo e pré-visualização reutilizando `PlaqueIllustration`; cards da vitrine ganham o botão "Personalizar". Critério: no celular, a pré-visualização muda conforme as escolhas, tudo operável por teclado, `pnpm check` verde.
 
 ## Manutenção
 

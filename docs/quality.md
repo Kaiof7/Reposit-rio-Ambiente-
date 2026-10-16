@@ -23,9 +23,9 @@ Durante o desenvolvimento, rode `pnpm test:watch` ou `pnpm vitest run <arquivo>`
 
 ## Estratégia de testes
 
-Existentes: `src/lib/env.test.ts` (nível de log e formato do número de WhatsApp, sem ecoar o valor no erro) e `src/lib/logger.test.ts` (redação de segredos).
+Existentes: `src/lib/env.test.ts` (nível de log e formato do número de WhatsApp, sem ecoar o valor no erro), `src/lib/logger.test.ts` (redação de segredos), `src/catalog/models.test.ts` (ids únicos, tamanhos conhecidos, preços inteiros positivos, preço inicial) e `src/lib/format.test.ts` (BRL a partir de centavos).
 
-Para o MVP, cubra com Vitest a lógica pura: catálogo, schemas Zod do pedido, validação de URL, montagem e codificação da mensagem do WhatsApp e payload do QR Pix. Testes DOM/E2E (Testing Library, Playwright) entram junto dos fluxos que precisarem deles; hoje não existem. Não escreva testes que apenas repetem o código.
+Para o MVP, cubra com Vitest a lógica pura: schemas Zod do pedido, validação de URL, montagem e codificação da mensagem do WhatsApp e payload do QR Pix. Testes DOM/E2E (Testing Library, Playwright) entram junto dos fluxos que precisarem deles; hoje não existem. Não escreva testes que apenas repetem o código.
 
 ## Revisão após implementação ou correção
 

@@ -77,7 +77,7 @@ Recursos temporários: clone do toolkit, scaffold e logs no diretório de rascun
 - Decisões do vendedor: preços, fotos, número de WhatsApp, respostas do FAQ, contato, hospedagem (ver `PRODUCT.md`).
 - Advisory de `braces`: reavaliar quando houver versão corrigida ou novo `eslint-config-next`.
 
-Próxima tarefa do MVP: catálogo tipado (valores de exemplo marcados) e vitrine da home (fluxo 1), com teste do catálogo e `pnpm check` verde.
+Fluxo 1 (catálogo e vitrine) entregue em 16/10/2026; evidências em `docs/design.md`. Próxima tarefa do MVP: personalização do adesivo (fluxo 2), descrita em `PRODUCT.md`.
 
 Revisão sugerida após essa entrega: **3 ciclos** de code review (escopo pequeno, sem dados sensíveis ainda), focos: (1) acessibilidade e mobile da vitrine, (2) tipagem do catálogo e Server/Client boundaries, (3) integração e checks. Prompt:
 
