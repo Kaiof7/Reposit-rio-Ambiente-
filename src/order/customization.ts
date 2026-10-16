@@ -60,12 +60,3 @@ export function changeModel(current: CustomizationInput, modelId: ModelId): Cust
     callToAction: current.callToAction === previous?.defaultCallToAction ? next.defaultCallToAction : current.callToAction,
   };
 }
-
-export function fieldErrors(error: z.ZodError<CustomizationInput>) {
-  const errors: Partial<Record<CustomizationField, string>> = {};
-  for (const issue of error.issues) {
-    const field = issue.path[0] as CustomizationField;
-    errors[field] ??= issue.message;
-  }
-  return errors;
-}

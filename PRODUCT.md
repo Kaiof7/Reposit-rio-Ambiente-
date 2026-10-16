@@ -68,13 +68,15 @@ Hipóteses reversíveis (podem mudar sem retrabalho grande):
 - **Fotos dos modelos: a definir.** Até existirem fotos reais, a vitrine usa ilustrações/placeholders identificados.
 - Quantidade mínima por pedido: 1; máxima de exemplo, a definir com o vendedor.
 - O QR code Pix da pré-visualização segue o formato BR Code estático (Pix "copia e cola"), montado no navegador com tipo/chave/nome do recebedor e cidade do pedido. A arte final continua a cargo do vendedor.
-- Texto da ajuda para achar o link de avaliação do Google: redigido a partir da documentação pública do Google Perfil da Empresa, revisado pelo vendedor.
+- Texto da ajuda para achar o link de avaliação do Google: redigido a partir da documentação pública do Google Perfil da Empresa, a revisar pelo vendedor.
+- O site aceita domínio sem `https://` e, no Instagram, só o `@perfil`, convertendo para o link completo mostrado ao cliente antes de seguir.
 
 Pendências que dependem do vendedor (não inventar):
 
 - Número real de WhatsApp para `NEXT_PUBLIC_WHATSAPP_NUMBER` (configurado só no ambiente de deploy).
 - Respostas oficiais do FAQ quanto a regravação do chip ("dá para trocar o link depois?"), prazos de produção e frete.
 - Dados de contato exibidos na página de contato.
+- Modelo do chip NFC usado (ex.: NTAG213, NTAG215). Ele limita o tamanho do link gravado (no NTAG213, cerca de 130 caracteres). Hoje o site não limita o comprimento; quando o chip for definido, o limite entra na validação do link.
 - Hospedagem e domínio (publicação depende de autorização).
 
 ## Critérios de aceitação
@@ -93,7 +95,7 @@ Técnicos:
 
 ## Próxima entrega
 
-Destino do NFC (fluxo 3): no lugar da mensagem provisória de "Continuar", etapa para informar o link gravado no chip (avaliação Google, site, Instagram, cardápio ou outro), com validação de URL por Zod e ajuda curta para achar o link de avaliação do Google. Critério: URL inválida mostra erro junto do campo, tudo por teclado no celular, `pnpm check` verde.
+QR code opcional (fluxo 4): etapa para escolher se a plaquinha terá QR code impresso e para onde aponta (chave Pix com tipo, chave e nome do recebedor, ou um link), com validação Zod e pré-visualização do QR code gerado no navegador. Critério: QR legível pela câmera do celular na prévia, Pix no formato BR Code, nada armazenado, `pnpm check` verde.
 
 ## Manutenção
 

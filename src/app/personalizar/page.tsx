@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MODELS, findModel } from "@/catalog/models";
-import { CustomizeForm } from "@/components/customize-form";
+import { OrderFlow } from "@/components/order-flow";
 
 export const metadata: Metadata = {
-  title: "Personalize sua plaquinha | Plaquinhas NFC",
-  description: "Escolha modelo, tamanho e cor, escreva o nome do seu negócio e veja a prévia da plaquinha.",
+  title: "Monte sua plaquinha | Plaquinhas NFC",
+  description: "Escolha modelo, tamanho e cor, veja a prévia da plaquinha e informe o link gravado no chip.",
 };
 
 export default async function CustomizePage(props: PageProps<"/personalizar">) {
@@ -18,11 +18,11 @@ export default async function CustomizePage(props: PageProps<"/personalizar">) {
         Voltar para os modelos
       </Link>
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Personalize sua plaquinha</h1>
-        <p className="text-foreground/80">A prévia muda conforme suas escolhas. A arte final é feita pela nossa equipe.</p>
+        <h1 className="text-3xl font-semibold tracking-tight">Monte sua plaquinha</h1>
+        <p className="text-foreground/80">Em poucas etapas, sem cadastro. A arte final é feita pela nossa equipe.</p>
       </div>
-      {/* key resets the form when the model in the URL changes. */}
-      <CustomizeForm key={model.id} initialModelId={model.id} />
+      {/* key resets the flow when the model in the URL changes. */}
+      <OrderFlow key={model.id} initialModelId={model.id} />
     </main>
   );
 }

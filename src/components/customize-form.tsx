@@ -1,20 +1,20 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { BACKGROUNDS, MODELS, SIZES, type BackgroundId, type ModelId } from "@/catalog/models";
+import { BACKGROUNDS, MODELS, SIZES, type BackgroundId } from "@/catalog/models";
 import { PlaqueIllustration } from "@/components/plaque-illustration";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { errorClass, inputClass, optionClass, primaryButtonClass } from "@/components/styles";
 import {
   BUSINESS_NAME_MAX,
   CALL_TO_ACTION_MAX,
   changeModel,
   customizationSchema,
-  fieldErrors,
-  initialCustomization,
   type CustomizationField,
   type CustomizationInput,
 } from "@/order/customization";
+import { fieldErrors } from "@/order/field-errors";
 
 const FIELD_FOCUS_TARGET: Record<CustomizationField, string> = {
   modelId: "grupo-modelo",
@@ -25,25 +25,20 @@ const FIELD_FOCUS_TARGET: Record<CustomizationField, string> = {
   willSendLogo: "logo",
 };
 
-const optionClass =
-  "flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-foreground/20 px-3 py-2 has-checked:border-foreground has-checked:bg-foreground/5 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-foreground";
-const inputClass =
-  "min-h-11 w-full rounded-xl border border-foreground/30 bg-background px-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground aria-invalid:border-red-600";
 
-export function CustomizeForm({ initialModelId }: { initialModelId: ModelId }) {
-  const [values, setValues] = useState<CustomizationInput>(() => initialCustomization(initialModelId));
+type CustomizeFormProps = {
+  values: CustomizationInput;
+  onChange: (values: CustomizationInput) => void;
+  onNext: () => void;
+};
+
+export function CustomizeForm({ values, onChange: update, onNext }: CustomizeFormProps) {
   const [showErrors, setShowErrors] = useState(false);
-  const [done, setDone] = useState(false);
 
   const result = customizationSchema.safeParse(values);
-  const errors = showErrors && !result.success ? fieldErrors(result.error) : {};
+  const errors = showErrors && !result.success ? fieldErrors<CustomizationField>(result.error) : {};
   const model = MODELS.find((candidate) => candidate.id === values.modelId) ?? MODELS[0];
   const size = model.sizes.find((candidate) => candidate.id === values.sizeId);
-
-  function update(next: CustomizationInput) {
-    setValues(next);
-    setDone(false);
-  }
 
   function text(field: "businessName" | "callToAction") {
     return (event: ChangeEvent<HTMLInputElement>) => update({ ...values, [field]: event.target.value });
@@ -53,10 +48,10 @@ export function CustomizeForm({ initialModelId }: { initialModelId: ModelId }) {
     event.preventDefault();
     setShowErrors(true);
     if (result.success) {
-      setDone(true);
+      onNext();
       return;
     }
-    const first = fieldErrors(result.error);
+    const first = fieldErrors<CustomizationField>(result.error);
     const field = (Object.keys(FIELD_FOCUS_TARGET) as CustomizationField[]).find((key) => first[key]);
     const target = field && document.getElementById(FIELD_FOCUS_TARGET[field]);
     const focusable = target instanceof HTMLFieldSetElement ? target.querySelector("input") : target;
@@ -67,7 +62,7 @@ export function CustomizeForm({ initialModelId }: { initialModelId: ModelId }) {
     [hint, errors[field] && `${field}-erro`].filter(Boolean).join(" ") || undefined;
   const errorText = (field: CustomizationField) =>
     errors[field] && (
-      <p id={`${field}-erro`} className="text-sm font-medium text-red-700 dark:text-red-400">
+      <p id={`${field}-erro`} className={errorClass}>
         {errors[field]}
       </p>
     );
@@ -214,15 +209,9 @@ export function CustomizeForm({ initialModelId }: { initialModelId: ModelId }) {
               Valor por unidade: <strong className="font-semibold">{formatPrice(size.priceCents)}</strong>
             </p>
           )}
-          <button
-            type="submit"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-foreground px-6 font-medium text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:w-fit"
-          >
+          <button type="submit" className={primaryButtonClass}>
             Continuar
           </button>
-          <p role="status" className="text-sm">
-            {done && "Personalização pronta. A próxima etapa, o link gravado no chip, chega em breve."}
-          </p>
         </div>
       </form>
     </div>

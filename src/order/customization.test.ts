@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { changeModel, customizationSchema, fieldErrors, initialCustomization } from "./customization";
+import { changeModel, customizationSchema, initialCustomization } from "./customization";
+import { fieldErrors } from "./field-errors";
 
 const valid = { ...initialCustomization("avaliacao-google"), businessName: "  Padaria Pão Quente " };
 
