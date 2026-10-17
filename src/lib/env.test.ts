@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getLogLevel } from "./env";
-import { DEFAULT_WHATSAPP_NUMBER, findWhatsAppNumber, getWhatsAppNumber } from "./public-env";
+import { findWhatsAppNumber, getWhatsAppNumber } from "./public-env";
 
 vi.mock("server-only", () => ({}));
 afterEach(() => vi.unstubAllEnvs());
@@ -32,12 +32,11 @@ describe("public environment", () => {
     }
   });
 
-  it("falls back to the seller number when the variable is missing or invalid", () => {
-    expect(DEFAULT_WHATSAPP_NUMBER).toMatch(/^55\d{10,11}$/);
+  it("returns null instead of throwing when the page only needs to know", () => {
     vi.stubEnv("NEXT_PUBLIC_WHATSAPP_NUMBER", undefined);
-    expect(findWhatsAppNumber()).toBe(DEFAULT_WHATSAPP_NUMBER);
+    expect(findWhatsAppNumber()).toBeNull();
     vi.stubEnv("NEXT_PUBLIC_WHATSAPP_NUMBER", "invalido");
-    expect(findWhatsAppNumber()).toBe(DEFAULT_WHATSAPP_NUMBER);
+    expect(findWhatsAppNumber()).toBeNull();
     vi.stubEnv("NEXT_PUBLIC_WHATSAPP_NUMBER", "5511912345678");
     expect(findWhatsAppNumber()).toBe("5511912345678");
   });
