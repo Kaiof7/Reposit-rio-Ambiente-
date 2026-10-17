@@ -20,7 +20,7 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-16 px-4 py-10 sm:py-16">
       <section aria-labelledby="titulo" className="flex max-w-2xl flex-col gap-4">
-        <p className="text-sm font-medium uppercase tracking-wide text-foreground/70">Plaquinhas NFC</p>
+        <p className="text-sm font-medium uppercase tracking-wide text-foreground/70">Sua Plaquinha NFC</p>
         <h1 id="titulo" className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           Seu cliente aproxima o celular e já avalia, paga ou te segue
         </h1>

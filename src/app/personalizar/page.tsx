@@ -5,7 +5,7 @@ import { OrderFlow } from "@/components/order-flow";
 import { findWhatsAppNumber } from "@/lib/public-env";
 
 export const metadata: Metadata = {
-  title: "Monte sua plaquinha | Plaquinhas NFC",
+  title: "Monte sua plaquinha | Sua Plaquinha NFC",
   description: "Escolha modelo, tamanho e cor, veja a prévia da plaquinha e informe o link gravado no chip.",
 };
 

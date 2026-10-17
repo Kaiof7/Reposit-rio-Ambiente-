@@ -6,8 +6,8 @@ import { findWhatsAppNumber } from "@/lib/public-env";
 import { formatPhone } from "@/order/customer";
 
 export const metadata: Metadata = {
-  title: "Contato | Plaquinhas NFC",
-  description: "Fale com a Plaquinhas NFC pelo WhatsApp para tirar dúvidas antes do pedido.",
+  title: "Contato | Sua Plaquinha NFC",
+  description: "Fale com a Sua Plaquinha NFC pelo WhatsApp para tirar dúvidas antes do pedido.",
 };
 
 export default async function ContactPage() {

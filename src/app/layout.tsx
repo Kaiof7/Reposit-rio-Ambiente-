@@ -9,7 +9,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Plaquinhas NFC",
+  title: "Sua Plaquinha NFC",
   description: "Plaquinhas NFC personalizadas para pequenos negócios: avaliação no Google, Pix, Instagram e mais com um toque do celular.",
 };
 

@@ -1,4 +1,4 @@
-# Plaquinhas NFC
+# Sua Plaquinha NFC
 
 Loja online de plaquinhas NFC personalizadas para pequenos negócios. O cliente monta o pedido no site e o envia ao vendedor pelo WhatsApp.
 
@@ -55,12 +55,13 @@ Em ordem de prioridade:
 - Acessibilidade: navegação por teclado, foco visível, contraste adequado, rótulo em todos os campos e erros associados ao campo.
 - URLs do NFC e do QR code validadas antes do envio.
 - Mensagem do WhatsApp com todas as escolhas e dados do pedido, codificada corretamente para a URL `wa.me`.
-- Número do vendedor configurável em `NEXT_PUBLIC_WHATSAPP_NUMBER` (somente dígitos, `55` + DDD + número), documentado em `.env.example`. Nenhum número real fica versionado.
+- Número do vendedor versionado no código (`DEFAULT_WHATSAPP_NUMBER`), com substituição opcional por `NEXT_PUBLIC_WHATSAPP_NUMBER` (somente dígitos, `55` + DDD + número), documentada em `.env.example`.
 - Privacidade: o site não armazena dados do cliente nem chaves Pix. Os dados existem apenas no navegador durante o preenchimento e na mensagem que o próprio cliente envia.
 - Sem erros no console do navegador.
 
 ## Restrições e decisões técnicas
 
+- Nome da loja: **Sua Plaquinha NFC**, escolhido pelo vendedor em 16/10/2026 (antes "Plaquinhas NFC"). Aparece no cabeçalho, nos títulos das páginas e no topo da mensagem do pedido.
 - Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, pnpm, Node.js 22. Detalhes em `docs/architecture.md` e `docs/setup.md`.
 - **Sem banco de dados no MVP.** O catálogo de modelos fica num arquivo de configuração tipado no código; o pedido não é salvo no servidor e segue apenas na mensagem do WhatsApp. Justificativa: o fechamento acontece no WhatsApp, não há painel para consultar pedidos e não guardar dados pessoais nem chaves Pix reduz risco e custo de operação. Por isso o default do toolkit (Drizzle ORM + PostgreSQL) não foi instalado. **Evolução futura:** persistir pedidos (Drizzle + PostgreSQL) quando houver painel do vendedor, histórico ou pagamento online; isso exigirá política de privacidade e retenção de dados.
 - Validação com Zod no cliente; não há rota de servidor recebendo pedidos.
@@ -86,7 +87,7 @@ Pendências que dependem do vendedor (não inventar):
 - **Preços e prazos dos serviços extras** (site, cadastro no Google, arte sob medida): o site mostra "Valor combinado pelo WhatsApp" até serem definidos.
 - **Descrição e imagem dos sites da vitrine:** o ambiente de desenvolvimento não acessou https://orcamento-assistencia-celular.vercel.app; a descrição atual ("Site de orçamento para uma assistência de celulares") foi deduzida do endereço e precisa ser confirmada. A vitrine usa uma ilustração de navegador até haver captura de tela real.
 
-- Número real de WhatsApp para `NEXT_PUBLIC_WHATSAPP_NUMBER`, configurado só no ambiente de deploy e definido antes do build: o Next fixa o valor no `next build`, então trocar o número exige novo build.
+- Número de WhatsApp do vendedor: (83) 99115-3515, versionado em `src/lib/public-env.ts` a pedido do vendedor em 17/10/2026 (revoga a restrição inicial de não versionar o número). A variável `NEXT_PUBLIC_WHATSAPP_NUMBER`, se definida e válida antes do build, tem prioridade.
 - Respostas oficiais do FAQ quanto a regravação do chip ("dá para trocar o link depois?"), prazos de produção e frete. Hoje o FAQ responde de forma neutra ("depende de como o chip é gravado"; prazo e entrega combinados pelo WhatsApp).
 - Compatibilidade NFC citada no FAQ (iPhone XS ou mais novo sem app; Android com NFC ligado): baseada em conhecimento geral, a confirmar com testes nos chips usados.
 - Outros canais de contato (e-mail, Instagram, endereço): a página de contato mostra só o WhatsApp configurado.

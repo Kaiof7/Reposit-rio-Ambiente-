@@ -1,4 +1,4 @@
-# Plaquinhas NFC
+# Sua Plaquinha NFC
 
 Loja online de plaquinhas NFC personalizadas para pequenos negócios brasileiros. O cliente escolhe o modelo, personaliza a arte, informa o link gravado no chip e o QR code opcional, e envia o pedido completo ao vendedor pelo WhatsApp. Detalhes em [PRODUCT.md](PRODUCT.md).
 
@@ -10,12 +10,12 @@ Requer Node.js 22.12+ (ou 24+; exigência do Vitest 5) e pnpm 10 (`packageManage
 
 ```bash
 pnpm install
-cp .env.example .env.local   # preencha NEXT_PUBLIC_WHATSAPP_NUMBER (55 + DDD + número)
+cp .env.example .env.local   # opcional: NEXT_PUBLIC_WHATSAPP_NUMBER substitui o número padrão
 pnpm dev                      # http://localhost:3000
 pnpm check                    # lint, tipos, regras, testes e build
 ```
 
-Não há banco de dados nem credenciais privadas. O número do WhatsApp é público por natureza (vai no link `wa.me`), mas o número real não é versionado.
+Não há banco de dados nem credenciais privadas. O número do WhatsApp do vendedor fica em `src/lib/public-env.ts`; a variável `NEXT_PUBLIC_WHATSAPP_NUMBER` pode substituí-lo.
 
 ## Documentação
 

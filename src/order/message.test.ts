@@ -22,7 +22,7 @@ describe("buildOrderMessage", () => {
   it("lists the plaque, chip, QR code and customer in readable sections", () => {
     expect(buildOrderMessage(base)).toBe(
       [
-        "*Novo pedido: Plaquinhas NFC*",
+        "*Novo pedido: Sua Plaquinha NFC*",
         "",
         "*Plaquinha*",
         "Modelo: Avaliação no Google",
