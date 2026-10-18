@@ -29,4 +29,10 @@ export const SAMPLE_SITES = [
     description: "Site de orçamento para uma assistência de celulares.",
     url: "https://orcamento-assistencia-celular.vercel.app",
   },
+  {
+    id: "lanchonete",
+    name: "Lanchonete",
+    description: "Site para uma lanchonete.",
+    url: "https://lanchonete-site-ruddy.vercel.app",
+  },
 ] as const;
