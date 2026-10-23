@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import { createSessionToken, isValidSessionToken, passwordMatches, SESSION_MAX_AGE_SECONDS } from "./admin-session";
 
@@ -17,6 +18,12 @@ describe("admin session", () => {
     const token = createSessionToken(password, now);
     expect(isValidSessionToken(token, password, now + 1000)).toBe(true);
     expect(isValidSessionToken(token, password, now + SESSION_MAX_AGE_SECONDS * 1000)).toBe(false);
+  });
+
+  it("does not sign with the raw password, so a leaked cookie is costly to crack", () => {
+    const [expiresAt, signature] = createSessionToken(password, now).split(".");
+    const rawKeySignature = createHmac("sha256", password).update(`painel:${expiresAt}`).digest("base64url");
+    expect(signature).not.toBe(rawKeySignature);
   });
 
   it("rejects tokens signed with another password or tampered", () => {

@@ -1,5 +1,5 @@
 import "server-only";
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, scryptSync, timingSafeEqual } from "node:crypto";
 
 export const SESSION_COOKIE = "painel_sessao";
 export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
@@ -14,9 +14,21 @@ export function passwordMatches(input: string, password: string) {
   return sameBytes(digest(input), digest(password));
 }
 
-// The password is the signing key: changing ADMIN_PASSWORD logs everyone out.
+// The signing key is derived from the password with scrypt, so a leaked
+// cookie cannot be used to brute-force the password offline cheaply.
+// Changing ADMIN_PASSWORD changes the key and logs everyone out.
+let cachedKey: { password: string; key: Buffer } | undefined;
+
+function signingKey(password: string) {
+  if (cachedKey?.password !== password) {
+    const key = scryptSync(password, "sua-plaquinha-nfc:painel-sessao", 32, { N: 2 ** 15, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
+    cachedKey = { password, key };
+  }
+  return cachedKey.key;
+}
+
 function sign(expiresAt: number, password: string) {
-  return createHmac("sha256", password).update(`painel:${expiresAt}`).digest("base64url");
+  return createHmac("sha256", signingKey(password)).update(`painel:${expiresAt}`).digest("base64url");
 }
 
 export function createSessionToken(password: string, now = Date.now()) {

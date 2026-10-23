@@ -42,7 +42,7 @@ describe("parseModelForm", () => {
     );
     expect(result).toEqual({
       ok: true,
-      value: { modelId: "pix", available: true, offers: [{ sizeId: "a", priceCents: 2990, soldOut: true }] },
+      value: { modelId: "pix", available: true, sizeIds: ["a", "b"], offers: [{ sizeId: "a", priceCents: 2990, soldOut: true }] },
     });
   });
 

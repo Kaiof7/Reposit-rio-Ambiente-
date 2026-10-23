@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { Pool } from "pg";
-import { closeDatabase, getDb } from "./index";
+import { closeDatabase, getDb, pgErrorCode } from "./index";
 import { logger } from "@/lib/logger";
 
 vi.mock("server-only", () => ({}));
@@ -47,4 +47,11 @@ it("handles idle errors without logging the raw error or connection string", () 
   handler?.(Object.assign(new Error("sensitive-test-value"), { code: "ECONNRESET" }));
   expect(logger.error).toHaveBeenCalledWith({ code: "ECONNRESET" }, "Idle database connection failed");
   expect(JSON.stringify(vi.mocked(logger.error).mock.calls)).not.toContain("sensitive-test-value");
+});
+
+it("reads Postgres error codes from driver errors and Drizzle-wrapped ones", () => {
+  expect(pgErrorCode({ code: "42P01" })).toBe("42P01");
+  expect(pgErrorCode(Object.assign(new Error("wrapped"), { cause: { code: "23503" } }))).toBe("23503");
+  expect(pgErrorCode(new Error("plain"))).toBeUndefined();
+  expect(pgErrorCode(null)).toBeUndefined();
 });

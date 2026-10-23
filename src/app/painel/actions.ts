@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { parseModelForm, sizeFormSchema } from "@/catalog/admin-input";
 import { saveModel, saveSize } from "@/catalog/admin-store";
+import { pgErrorCode } from "@/db";
 import { isAdmin } from "@/lib/admin-auth";
 import { createSessionToken, passwordMatches, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from "@/lib/admin-session";
 import { getAdminPassword, hasDatabase } from "@/lib/env";
@@ -46,7 +47,12 @@ async function persist(write: () => Promise<void>, success: string): Promise<Act
   try {
     await write();
   } catch (error) {
-    logger.error({ code: (error as { code?: string }).code }, "Panel save failed");
+    const code = pgErrorCode(error);
+    logger.error({ code }, "Panel save failed");
+    // 42P01 (undefined_table): the database exists but migrations never ran.
+    if (code === "42P01") {
+      return { status: "error", message: "O banco ainda não foi preparado. Faça um novo deploy de produção na Vercel e tente de novo." };
+    }
     return { status: "error", message: "Não foi possível salvar. Tente de novo em instantes." };
   }
   revalidatePath("/", "layout");

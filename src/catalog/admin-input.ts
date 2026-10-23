@@ -40,6 +40,8 @@ export function uniqueId(base: string, taken: Iterable<string>) {
 export type ModelForm = {
   modelId: ModelId;
   available: boolean;
+  // Sizes shown in the submitted form; only these rows are replaced.
+  sizeIds: string[];
   offers: { sizeId: string; priceCents: number; soldOut: boolean }[];
 };
 
@@ -57,7 +59,10 @@ export function parseModelForm(form: FormData, sizeIds: readonly string[]) {
     else offers.push({ sizeId, priceCents, soldOut: form.get(`soldOut:${sizeId}`) === "on" });
   }
   if (Object.keys(errors).length > 0) return { ok: false as const, errors };
-  return { ok: true as const, value: { modelId, available: form.get("available") === "on", offers } satisfies ModelForm };
+  return {
+    ok: true as const,
+    value: { modelId, available: form.get("available") === "on", sizeIds: [...sizeIds], offers } satisfies ModelForm,
+  };
 }
 
 export const sizeFormSchema = z.object({

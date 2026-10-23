@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { saveModelAction, type ActionState } from "@/app/painel/actions";
+import { saveModelAction } from "@/app/painel/actions";
+import { usePanelForm } from "@/components/admin/use-panel-form";
 import { centsToInput } from "@/catalog/admin-input";
 import type { CatalogModel, CatalogSize } from "@/catalog/models";
 import { errorClass, focusRing, inputClass, primaryButtonClass } from "@/components/styles";
@@ -12,7 +12,7 @@ type ModelEditorProps = { model: CatalogModel; sizes: CatalogSize[]; disabled: b
 const checkboxClass = "size-5 accent-foreground";
 
 export function ModelEditor({ model, sizes, disabled }: ModelEditorProps) {
-  const [state, action, pending] = useActionState(saveModelAction, { status: "idle", message: "" } satisfies ActionState);
+  const { state, pending, formRef, onSubmit } = usePanelForm(saveModelAction);
   const headingId = `editor-${model.id}`;
   const inStock = model.sizes.filter((size) => !size.soldOut).length;
   return (
@@ -23,7 +23,7 @@ export function ModelEditor({ model, sizes, disabled }: ModelEditorProps) {
           {!model.available ? "Oculto" : inStock === 0 ? "Esgotado" : `${inStock} tamanho(s) à venda`}
         </span>
       </summary>
-      <form action={action} aria-labelledby={headingId} className="flex flex-col gap-4 border-t border-foreground/15 p-4">
+      <form ref={formRef} onSubmit={onSubmit} aria-labelledby={headingId} className="flex flex-col gap-4 border-t border-foreground/15 p-4">
         <input type="hidden" name="modelId" value={model.id} />
         <input type="hidden" name="sizeIds" value={sizes.map((size) => size.id).join(",")} />
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -47,17 +47,22 @@ export function ModelEditor({ model, sizes, disabled }: ModelEditorProps) {
                 </label>
                 <div className="flex flex-col gap-1">
                   <label htmlFor={priceId} className="sr-only">Preço de {size.label} em reais</label>
-                  <input
-                    id={priceId}
-                    name={`price:${size.id}`}
-                    inputMode="decimal"
-                    autoComplete="off"
-                    placeholder="0,00"
-                    defaultValue={offer ? centsToInput(offer.priceCents) : ""}
-                    aria-invalid={Boolean(error)}
-                    aria-describedby={error ? `${priceId}-erro` : undefined}
-                    className={cn(inputClass, "tabular-nums")}
-                  />
+                  <div className="relative">
+                    <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-foreground/70">
+                      R$
+                    </span>
+                    <input
+                      id={priceId}
+                      name={`price:${size.id}`}
+                      inputMode="decimal"
+                      autoComplete="off"
+                      placeholder="0,00"
+                      defaultValue={offer ? centsToInput(offer.priceCents) : ""}
+                      aria-invalid={Boolean(error)}
+                      aria-describedby={error ? `${priceId}-erro` : undefined}
+                      className={cn(inputClass, "pl-10 tabular-nums")}
+                    />
+                  </div>
                 </div>
                 <label className="flex min-h-11 items-center gap-2">
                   <input type="checkbox" name={`soldOut:${size.id}`} defaultChecked={offer?.soldOut} className={checkboxClass} />
@@ -69,7 +74,7 @@ export function ModelEditor({ model, sizes, disabled }: ModelEditorProps) {
           })}
         </fieldset>
         <div className="flex flex-wrap items-center gap-3">
-          <button type="submit" disabled={disabled || pending} className={primaryButtonClass}>
+          <button type="submit" disabled={disabled} aria-disabled={pending} className={primaryButtonClass}>
             {pending ? "Salvando…" : `Salvar ${model.name}`}
           </button>
           <p role="status" className={state.status === "error" ? errorClass : "text-sm"}>{state.message}</p>

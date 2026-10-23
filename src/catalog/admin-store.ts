@@ -1,5 +1,5 @@
 import "server-only";
-import { eq, max, sql } from "drizzle-orm";
+import { and, eq, inArray, max, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { modelSettings, modelSizes, sizes } from "@/db/schema";
 import { slugify, uniqueId, type ModelForm, type SizeForm } from "./admin-input";
@@ -28,7 +28,13 @@ export async function saveModel(form: ModelForm) {
       .insert(modelSettings)
       .values({ modelId: form.modelId, available: form.available })
       .onConflictDoUpdate({ target: modelSettings.modelId, set: { available: form.available } });
-    await tx.delete(modelSizes).where(eq(modelSizes.modelId, form.modelId));
+    // Replace only the sizes this form showed, so a stale form (e.g. another
+    // tab opened before a size was created) cannot drop offers it did not list.
+    if (form.sizeIds.length > 0) {
+      await tx
+        .delete(modelSizes)
+        .where(and(eq(modelSizes.modelId, form.modelId), inArray(modelSizes.sizeId, form.sizeIds)));
+    }
     if (form.offers.length > 0) {
       await tx.insert(modelSizes).values(form.offers.map((offer) => ({ modelId: form.modelId, ...offer })));
     }

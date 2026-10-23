@@ -1,6 +1,6 @@
 import "server-only";
 import { connection } from "next/server";
-import { getDb } from "@/db";
+import { getDb, pgErrorCode } from "@/db";
 import { modelSettings, modelSizes, sizes } from "@/db/schema";
 import { hasDatabase } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -22,7 +22,7 @@ export async function getCatalog(): Promise<Catalog> {
   } catch (error) {
     // Keep the store selling with the code defaults if the database is down;
     // stock flags may be stale until it recovers.
-    logger.error({ code: (error as { code?: string }).code }, "Catalog read failed; using defaults");
+    logger.error({ code: pgErrorCode(error) }, "Catalog read failed; using defaults");
     return DEFAULT_CATALOG;
   }
 }

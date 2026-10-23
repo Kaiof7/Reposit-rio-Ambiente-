@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { saveSizeAction, type ActionState } from "@/app/painel/actions";
+import { saveSizeAction } from "@/app/painel/actions";
+import { usePanelForm } from "@/components/admin/use-panel-form";
 import type { CatalogSize } from "@/catalog/models";
 import { errorClass, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/styles";
 
@@ -9,10 +9,10 @@ type SizeEditorProps = { size?: CatalogSize; disabled: boolean };
 
 // Edits one size, or creates a new one when no size is given.
 export function SizeEditor({ size, disabled }: SizeEditorProps) {
-  const [state, action, pending] = useActionState(saveSizeAction, { status: "idle", message: "" } satisfies ActionState);
+  const { state, pending, formRef, onSubmit } = usePanelForm(saveSizeAction, { resetOnSuccess: !size });
   const prefix = `tamanho-${size?.id ?? "novo"}`;
   return (
-    <form action={action} className="flex flex-col gap-3 rounded-2xl border border-foreground/15 p-4 in-[details]:rounded-none in-[details]:border-x-0 in-[details]:border-b-0">
+    <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-3 rounded-2xl border border-foreground/15 p-4 in-[details]:rounded-none in-[details]:border-x-0 in-[details]:border-b-0">
       <input type="hidden" name="id" value={size?.id ?? ""} />
       <UncontrolledField id={`${prefix}-nome`} name="label" label="Nome" defaultValue={size?.label} placeholder="Adesivo 10 × 10 cm" error={state.errors?.label} />
       <UncontrolledField
@@ -31,7 +31,7 @@ export function SizeEditor({ size, disabled }: SizeEditorProps) {
         </select>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={disabled || pending} className={size ? secondaryButtonClass : primaryButtonClass}>
+        <button type="submit" disabled={disabled} aria-disabled={pending} className={size ? secondaryButtonClass : primaryButtonClass}>
           {pending ? "Salvando…" : size ? "Salvar tamanho" : "Adicionar tamanho"}
         </button>
         <p role="status" className={state.status === "error" ? errorClass : "text-sm"}>{state.message}</p>

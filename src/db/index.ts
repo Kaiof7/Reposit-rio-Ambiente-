@@ -34,3 +34,10 @@ export async function closeDatabase() {
   cached = undefined;
   await client?.end();
 }
+
+// Postgres error code (e.g. 42P01), also when Drizzle wraps the driver error.
+export function pgErrorCode(error: unknown): string | undefined {
+  const value = error as { code?: unknown; cause?: { code?: unknown } } | null;
+  const code = value?.cause?.code ?? value?.code;
+  return typeof code === "string" ? code : undefined;
+}
