@@ -7,11 +7,13 @@ import { whatsAppUrl } from "@/order/message";
 type SummaryStepProps = {
   message: string | null;
   whatsappNumber: string | null;
+  orderEmail: boolean;
+  onSend: () => void;
   onBack: () => void;
 };
 
 // Shows the exact WhatsApp message, with *title* lines rendered as headings.
-export function SummaryStep({ message, whatsappNumber, onBack }: SummaryStepProps) {
+export function SummaryStep({ message, whatsappNumber, orderEmail, onSend, onBack }: SummaryStepProps) {
   const [notice, setNotice] = useState("");
 
   if (!message) {
@@ -24,6 +26,7 @@ export function SummaryStep({ message, whatsappNumber, onBack }: SummaryStepProp
   }
 
   async function copy() {
+    onSend();
     try {
       await navigator.clipboard.writeText(message ?? "");
       setNotice("Mensagem copiada.");
@@ -36,6 +39,7 @@ export function SummaryStep({ message, whatsappNumber, onBack }: SummaryStepProp
     <div className="flex max-w-2xl flex-col gap-6">
       <p className="leading-relaxed text-foreground/80">
         Confira tudo. Ao tocar em “Enviar pelo WhatsApp”, o app abre com esta mensagem pronta: é só enviar.
+        {orderEmail && " Ao enviar ou copiar, uma cópia do pedido também vai para o e-mail da loja."}
       </p>
       <div className="flex flex-col rounded-2xl border border-foreground/15 p-4 leading-relaxed">
         {message.split("\n").map((line, index) => {
@@ -61,7 +65,10 @@ export function SummaryStep({ message, whatsappNumber, onBack }: SummaryStepProp
             href={whatsAppUrl(whatsappNumber, message)}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => setNotice("Abrimos o WhatsApp com a mensagem. Se não abriu, use “Copiar mensagem”.")}
+            onClick={() => {
+              onSend();
+              setNotice("Abrimos o WhatsApp com a mensagem. Se não abriu, use “Copiar mensagem”.");
+            }}
             className={primaryButtonClass}
           >
             Enviar pelo WhatsApp<span className="sr-only"> (abre o WhatsApp)</span>

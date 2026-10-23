@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { getCatalog } from "@/catalog/load";
 import { LoginForm } from "@/components/admin/login-form";
 import { ModelEditor } from "@/components/admin/model-editor";
@@ -16,6 +17,8 @@ export const metadata: Metadata = {
 const noticeClass = "rounded-xl bg-foreground/5 p-4 leading-relaxed";
 
 export default async function PanelPage() {
+  // Per request: the login settings come from the runtime environment, not the build.
+  await connection();
   const configured = getAdminCredentials() !== null;
   const signedIn = configured && (await isAdmin());
   const catalog = signedIn ? await getCatalog() : null;

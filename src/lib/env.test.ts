@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAdminCredentials, getDatabaseUrl, getLogLevel, hasDatabase } from "./env";
+import { getAdminCredentials, getDatabaseUrl, getLogLevel, getOrderEmailConfig, hasDatabase } from "./env";
 import { findWhatsAppNumber, getWhatsAppNumber } from "./public-env";
 
 vi.mock("server-only", () => ({}));
@@ -66,5 +66,25 @@ describe("public environment", () => {
     expect(findWhatsAppNumber()).toBeNull();
     vi.stubEnv("NEXT_PUBLIC_WHATSAPP_NUMBER", "5511912345678");
     expect(findWhatsAppNumber()).toBe("5511912345678");
+  });
+});
+
+describe("order e-mail environment", () => {
+  it("is off without an API key and sends to ADMIN_EMAIL unless ORDER_EMAIL_TO is set", () => {
+    vi.stubEnv("ADMIN_EMAIL", "Dono@Exemplo.com");
+    vi.stubEnv("ORDER_EMAIL_TO", "");
+    vi.stubEnv("ORDER_EMAIL_FROM", "");
+    vi.stubEnv("RESEND_API_KEY", "");
+    expect(getOrderEmailConfig()).toBeNull();
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    expect(getOrderEmailConfig()).toEqual({
+      apiKey: "re_test",
+      from: "Sua Plaquinha NFC <onboarding@resend.dev>",
+      to: "dono@exemplo.com",
+    });
+    vi.stubEnv("ORDER_EMAIL_TO", "pedidos@exemplo.com");
+    expect(getOrderEmailConfig()?.to).toBe("pedidos@exemplo.com");
+    vi.stubEnv("ORDER_EMAIL_TO", "not-an-email");
+    expect(getOrderEmailConfig()).toBeNull();
   });
 });
