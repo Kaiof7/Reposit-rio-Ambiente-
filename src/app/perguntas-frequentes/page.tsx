@@ -38,7 +38,7 @@ const QUESTIONS = [
   {
     question: "Meus dados ficam salvos no site?",
     answer:
-      "Não. O que você preenche, incluindo a chave Pix, fica só no seu navegador e vai na mensagem que você mesmo envia pelo WhatsApp. Quando a loja ativa o aviso por e-mail, uma cópia dessa mesma mensagem vai para o e-mail da loja ao enviar ou copiar; o site não guarda o pedido.",
+      "Não. O que você preenche, incluindo a chave Pix, fica só no seu navegador e vai na mensagem que você mesmo envia pelo WhatsApp. Se a loja recebe pedidos por e-mail (o resumo avisa), uma cópia dessa mesma mensagem vai para o e-mail da loja quando você envia ou copia o pedido. O site não guarda o pedido.",
   },
 ];
 

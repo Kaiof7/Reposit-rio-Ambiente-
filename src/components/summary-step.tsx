@@ -65,6 +65,8 @@ export function SummaryStep({ message, whatsappNumber, orderEmail, onSend, onBac
             href={whatsAppUrl(whatsappNumber, message)}
             target="_blank"
             rel="noopener noreferrer"
+            // Middle-click also opens WhatsApp, so it sends the copy too.
+            onAuxClick={(event) => { if (event.button === 1) onSend(); }}
             onClick={() => {
               onSend();
               setNotice("Abrimos o WhatsApp com a mensagem. Se não abriu, use “Copiar mensagem”.");

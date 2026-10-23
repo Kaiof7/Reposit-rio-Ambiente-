@@ -88,7 +88,11 @@ export function OrderFlow({ catalog, initialModelId, whatsappNumber, orderEmail 
   const sendEmailCopy = () => {
     if (!orderEmail || !message || emailedMessage.current === message) return;
     emailedMessage.current = message;
-    emailOrderAction(inputs).catch(() => {});
+    // Allow a retry on the next tap if the copy was not sent.
+    emailOrderAction(inputs).then(
+      (sent) => { if (!sent && emailedMessage.current === message) emailedMessage.current = null; },
+      () => { if (emailedMessage.current === message) emailedMessage.current = null; },
+    );
   };
   const model = findModel(catalog, customization.modelId) ?? catalog.models[0];
   const unitPrice = model.sizes.find((size) => size.id === customization.sizeId);
