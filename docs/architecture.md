@@ -24,6 +24,7 @@ src/
 │   ├── layout.tsx        # layout raiz, lang="pt-BR", fonte Geist, metadata
 │   ├── page.tsx          # vitrine: o que é NFC, como funciona, usos e modelos
 │   ├── personalizar/page.tsx # pedido em etapas (lê ?modelo=, padrão: primeiro modelo)
+│   ├── personalizar/actions.ts # Server Action: revalida o pedido e envia a cópia por e-mail
 │   ├── perguntas-frequentes/page.tsx # FAQ estático
 │   ├── contato/page.tsx     # WhatsApp da loja; renderizada por requisição (connection())
 │   └── globals.css       # Tailwind e tokens de cor claro/escuro
@@ -69,12 +70,14 @@ src/
 │   ├── assemble.test.ts
 │   ├── message.ts              # texto da mensagem do WhatsApp e link wa.me
 │   ├── message.test.ts
+│   ├── email.ts                # cópia do pedido para o e-mail da loja (Resend, server-only)
+│   ├── email.test.ts
 │   ├── services.ts             # schema Zod dos dados dos serviços extras, validação só dos pedidos
 │   ├── services.test.ts
 │   └── field-errors.ts         # primeira mensagem por campo a partir de um ZodError
 └── lib/
     ├── env-schema.ts     # schemas Zod de ambiente e parseEnv sem vazar valores
-    ├── env.ts            # ambiente do servidor (LOG_LEVEL), server-only
+    ├── env.ts            # ambiente do servidor (banco, login do painel, e-mail de pedidos, LOG_LEVEL), server-only
     ├── public-env.ts     # NEXT_PUBLIC_WHATSAPP_NUMBER validado (55 + DDD + número)
     ├── logger.ts         # Pino com redação, server-only
     ├── utils.ts          # cn()
@@ -95,7 +98,7 @@ Implementado: fluxos 1 a 9 do PRODUCT.md.
 
 ## Fronteiras e fluxo
 
-Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. `/personalizar` é renderizada sob demanda (lê `searchParams`) e entrega `OrderFlow`, o Client Component que guarda o estado de todas as etapas no navegador; cada etapa valida com seu schema (`customizationSchema`, `nfcSchema`, `qrSchema`, `validateServiceDetails`) antes de avançar. A lista de etapas é derivada do estado: a etapa de serviços só existe quando o cliente pede criação de site ou cadastro no Google, no chip ou no QR code. No resumo, `assembleOrder` revalida todas as etapas e `buildOrderMessage` gera o texto; o botão é um link `https://wa.me/<número>?text=<encodeURIComponent(mensagem)>` aberto em nova aba. Nada é enviado ao servidor. Planejado: destino do NFC, QR code e formulário rodam num Client Component que valida com Zod, monta a mensagem e abre `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<encodeURIComponent(mensagem)>`. Não há Route Handler nem Server Action recebendo pedidos.
+Implementado: a vitrine (`src/app/page.tsx`) é um Server Component estático que lê `src/catalog/models.ts`; não envia JavaScript de componente ao cliente. `/personalizar` é renderizada sob demanda (lê `searchParams`) e entrega `OrderFlow`, o Client Component que guarda o estado de todas as etapas no navegador; cada etapa valida com seu schema (`customizationSchema`, `nfcSchema`, `qrSchema`, `validateServiceDetails`) antes de avançar. A lista de etapas é derivada do estado: a etapa de serviços só existe quando o cliente pede criação de site ou cadastro no Google, no chip ou no QR code. No resumo, `assembleOrder` revalida todas as etapas e `buildOrderMessage` gera o texto; o botão é um link `https://wa.me/<número>?text=<encodeURIComponent(mensagem)>` aberto em nova aba. Com `RESEND_API_KEY` configurada, o primeiro toque em "Enviar pelo WhatsApp" ou "Copiar mensagem" (uma vez por mensagem distinta; se o envio falhar, o próximo toque tenta de novo; clique do meio no link também conta) chama a Server Action `emailOrderAction` com as entradas brutas das etapas. Ela é um endpoint público: recalcula os serviços, revalida tudo com `assembleOrder` sobre o catálogo do servidor, gera o mesmo texto e o envia por `fetch` à API do Resend, sempre para o endereço do ambiente (`ORDER_EMAIL_TO` ou `ADMIN_EMAIL`), nunca para um endereço vindo do cliente. Falhas são registradas sem o conteúdo do pedido e não bloqueiam o WhatsApp. Nada é salvo.
 
 O número do vendedor é lido no servidor por `src/app/personalizar/page.tsx` e `src/app/contato/page.tsx` (`findWhatsAppNumber`, que devolve `null` se ausente ou inválido) e passado como prop ao `OrderFlow`; com `null`, o resumo e o contato mostram um aviso. O número real não é versionado. As duas páginas são renderizadas por requisição (`searchParams` e `connection()`). Atenção: o Next substitui `process.env.NEXT_PUBLIC_*` pelo valor do momento do `next build`, inclusive no servidor. Valor definido no build fica fixo até o próximo build (verificado em 16/10/2026: build com um número e servidor iniciado com outro mostrou o do build); sem valor no build, o número é lido na execução. Na prática, trocar o número exige novo build. O nome `NEXT_PUBLIC_*` segue o pedido do produto (valor público por natureza).
 
@@ -103,7 +106,7 @@ Implementado: `src/lib/env.ts` e `src/lib/logger.ts` importam `server-only` e fa
 
 ## Dados e migrations
 
-O banco guarda **só o catálogo** editado no painel; pedidos continuam sem persistência (só na mensagem do WhatsApp).
+O banco guarda **só o catálogo** editado no painel; pedidos continuam sem persistência (só na mensagem do WhatsApp e, se ativa, na cópia por e-mail).
 
 - **Tabelas** (`src/db/schema/index.ts`, SQL em `drizzle/0000_catalog.sql`): `sizes` (id, nome, descrição, formato, posição), `model_settings` (modelo, aparece na loja) e `model_sizes` (modelo, tamanho, preço em centavos > 0, esgotado), com chave composta e `on delete cascade` para o tamanho. Os 5 modelos ficam no código; as linhas referenciam seus ids.
 - **Leitura:** `getCatalog()` roda por requisição (`connection()`), em paralelo nas três tabelas. Sem `DATABASE_URL`, ou com tabelas vazias, usa `DEFAULT_CATALOG` (preços marcados como ilustrativos). Se o banco falhar, registra o erro no log e usa os padrões: a loja continua vendendo, mas "Esgotado" pode ficar desatualizado até o banco voltar.
@@ -116,8 +119,9 @@ O banco guarda **só o catálogo** editado no painel; pedidos continuam sem pers
 | Decisão | Motivo | Alternativa | Revisar quando |
 |---|---|---|---|
 | Catálogo no banco, editado em `/painel` (23/10/2026) | Pedido do vendedor: manter tamanhos, preços e estoque sem depender de PR | Edge Config da Vercel; continuar no código | Houver histórico de pedidos ou pagamento online |
-| Login por senha única (`ADMIN_PASSWORD`) e cookie de 7 dias assinado com HMAC, `httpOnly`, `sameSite=strict`, `path=/painel` | Um só dono; sem serviço externo. A chave do HMAC é derivada da senha com scrypt (N=2^15), para que um cookie vazado não permita quebrar a senha offline barato. Trocar a senha derruba todas as sessões; "Sair" só apaga o cookie do navegador | Login Google; sessões guardadas no banco | Mais de uma pessoa usar o painel |
+| Login por e-mail e senha (`ADMIN_EMAIL`, `ADMIN_PASSWORD`; ambos comparados sempre, em tempo constante) e cookie de 7 dias assinado com HMAC, `httpOnly`, `sameSite=strict`, `path=/painel` | Um só dono; sem serviço externo. A chave do HMAC é derivada da senha com scrypt (N=2^15), para que um cookie vazado não permita quebrar a senha offline barato. Trocar a senha ou o e-mail derruba todas as sessões; "Sair" só apaga o cookie do navegador | Login Google; sessões guardadas no banco | Mais de uma pessoa usar o painel |
 | Atraso de 1 s em senha errada, sem outro limite de tentativas | Não há armazenamento para contar tentativas por IP | Rate limit com Redis/Upstash | Sinais de tentativa de invasão |
+| Cópia do pedido por e-mail via API REST do Resend, sem limite por IP | Pedido do vendedor; sem biblioteca nova; destino fixo no ambiente, então abuso só gera e-mails de pedidos válidos para a loja | SDK `resend`, SMTP; rate limit com Redis/Upstash | Spam de pedidos falsos ou cota do plano gratuito esgotada |
 | Estoque como liga/desliga "Esgotado" | Pedidos fecham no WhatsApp; o site não sabe quando houve venda | Quantidade em estoque | Pedidos passarem a ser salvos |
 | Perfil ESLint completo `next-app` | Com Drizzle, guardas de `update/delete` e fronteira de dados | Perfil leve | — |
 | Pino e `env.ts` mantidos sem uso atual | Núcleo do toolkit; prontos para o primeiro código de servidor | Remover até haver uso | Se o MVP terminar sem nenhum código de servidor, avaliar remoção |

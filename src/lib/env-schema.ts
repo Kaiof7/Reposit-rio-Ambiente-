@@ -9,8 +9,9 @@ export const databaseUrlSchema = z.string().refine((value) => {
   }
 });
 
-// Single seller password for /painel; long enough to resist guessing.
+// Seller login for /painel: one e-mail plus a password long enough to resist guessing.
 export const adminPasswordSchema = z.string().min(12);
+export const adminEmailSchema = z.string().trim().toLowerCase().pipe(z.email());
 
 export const logLevelSchema = z.enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"]).default("info");
 

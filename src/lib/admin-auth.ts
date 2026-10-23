@@ -1,10 +1,10 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { isValidSessionToken, SESSION_COOKIE } from "./admin-session";
-import { getAdminPassword } from "./env";
+import { getAdminCredentials } from "./env";
 
 export async function isAdmin() {
-  const password = getAdminPassword();
+  const admin = getAdminCredentials();
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  return password !== null && isValidSessionToken(token, password);
+  return admin !== null && isValidSessionToken(token, admin);
 }

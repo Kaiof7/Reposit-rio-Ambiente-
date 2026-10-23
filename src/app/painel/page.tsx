@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { getCatalog } from "@/catalog/load";
 import { LoginForm } from "@/components/admin/login-form";
 import { ModelEditor } from "@/components/admin/model-editor";
 import { SizeEditor } from "@/components/admin/size-editor";
 import { focusRing, secondaryButtonClass } from "@/components/styles";
 import { isAdmin } from "@/lib/admin-auth";
-import { getAdminPassword, hasDatabase } from "@/lib/env";
+import { getAdminCredentials, hasDatabase } from "@/lib/env";
 import { logout } from "./actions";
 
 export const metadata: Metadata = {
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
 const noticeClass = "rounded-xl bg-foreground/5 p-4 leading-relaxed";
 
 export default async function PanelPage() {
-  const configured = getAdminPassword() !== null;
+  // Per request: the login settings come from the runtime environment, not the build.
+  await connection();
+  const configured = getAdminCredentials() !== null;
   const signedIn = configured && (await isAdmin());
   const catalog = signedIn ? await getCatalog() : null;
   const databaseReady = hasDatabase();
@@ -34,8 +37,8 @@ export default async function PanelPage() {
 
       {!configured && (
         <p className={noticeClass}>
-          O painel está desativado. Na Vercel, crie a variável <code>ADMIN_PASSWORD</code> com uma senha de pelo menos 12
-          caracteres e faça um novo deploy.
+          O painel está desativado. Na Vercel, crie as variáveis <code>ADMIN_EMAIL</code> (seu e-mail) e{" "}
+          <code>ADMIN_PASSWORD</code> (senha de pelo menos 12 caracteres) e faça um novo deploy.
         </p>
       )}
 

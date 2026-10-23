@@ -7,8 +7,8 @@ import { parseModelForm, sizeFormSchema } from "@/catalog/admin-input";
 import { saveModel, saveSize } from "@/catalog/admin-store";
 import { pgErrorCode } from "@/db";
 import { isAdmin } from "@/lib/admin-auth";
-import { createSessionToken, passwordMatches, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from "@/lib/admin-session";
-import { getAdminPassword, hasDatabase } from "@/lib/env";
+import { createSessionToken, credentialsMatch, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from "@/lib/admin-session";
+import { getAdminCredentials, hasDatabase } from "@/lib/env";
 import { logger } from "@/lib/logger";
 
 export type ActionState = { status: "idle" | "ok" | "error"; message: string; errors?: Record<string, string> };
@@ -21,13 +21,14 @@ const cookieOptions = {
 };
 
 export async function login(_: ActionState, form: FormData): Promise<ActionState> {
-  const password = getAdminPassword();
-  if (!password || !passwordMatches(String(form.get("senha") ?? ""), password)) {
+  const admin = getAdminCredentials();
+  const input = { email: String(form.get("email") ?? ""), password: String(form.get("senha") ?? "") };
+  if (!admin || !credentialsMatch(input, admin)) {
     // Slows down guessing; there is no other rate limit (see docs/architecture.md).
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    return { status: "error", message: "Senha incorreta." };
+    return { status: "error", message: "E-mail ou senha incorretos." };
   }
-  (await cookies()).set(SESSION_COOKIE, createSessionToken(password), { ...cookieOptions, maxAge: SESSION_MAX_AGE_SECONDS });
+  (await cookies()).set(SESSION_COOKIE, createSessionToken(admin), { ...cookieOptions, maxAge: SESSION_MAX_AGE_SECONDS });
   redirect("/painel");
 }
 

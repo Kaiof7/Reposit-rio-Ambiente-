@@ -3,6 +3,7 @@ import Link from "next/link";
 import { availableModels, startingPriceCents } from "@/catalog/models";
 import { getCatalog } from "@/catalog/load";
 import { OrderFlow } from "@/components/order-flow";
+import { getOrderEmailConfig } from "@/lib/env";
 import { findWhatsAppNumber } from "@/lib/public-env";
 
 export const metadata: Metadata = {
@@ -28,7 +29,13 @@ export default async function CustomizePage(props: PageProps<"/personalizar">) {
       </div>
       {model ? (
         // key resets the flow when the model in the URL changes.
-        <OrderFlow key={model.id} catalog={catalog} initialModelId={model.id} whatsappNumber={findWhatsAppNumber()} />
+        <OrderFlow
+          key={model.id}
+          catalog={catalog}
+          initialModelId={model.id}
+          whatsappNumber={findWhatsAppNumber()}
+          orderEmail={getOrderEmailConfig() !== null}
+        />
       ) : (
         <p className="rounded-xl bg-foreground/5 p-4 leading-relaxed">
           Nenhum modelo está disponível no momento. Fale com a gente pela página de contato.

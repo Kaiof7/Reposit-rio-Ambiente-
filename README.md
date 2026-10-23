@@ -15,7 +15,7 @@ pnpm dev                      # http://localhost:3000
 pnpm check                    # lint, tipos, regras, testes e build
 ```
 
-O banco (PostgreSQL) guarda só o catálogo editado no painel `/painel`; sem `DATABASE_URL`, a loja usa o catálogo padrão do código. A senha do painel fica em `ADMIN_PASSWORD`. O número do WhatsApp do vendedor fica só na variável `NEXT_PUBLIC_WHATSAPP_NUMBER` (na Vercel, em Settings → Environment Variables), nunca no repositório.
+O banco (PostgreSQL) guarda só o catálogo editado no painel `/painel`; sem `DATABASE_URL`, a loja usa o catálogo padrão do código. O login do painel usa `ADMIN_EMAIL` e `ADMIN_PASSWORD`. Com `RESEND_API_KEY`, cada pedido enviado ou copiado também chega como cópia no e-mail da loja (`ORDER_EMAIL_TO`, ou `ADMIN_EMAIL`). O número do WhatsApp do vendedor fica só na variável `NEXT_PUBLIC_WHATSAPP_NUMBER` (na Vercel, em Settings → Environment Variables), nunca no repositório.
 
 ## Documentação
 

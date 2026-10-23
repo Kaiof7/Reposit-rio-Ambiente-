@@ -91,3 +91,10 @@ Faça 3 ciclos de code review do catálogo e da vitrine: 1) acessibilidade/mobil
 - Templates do toolkit (revisão `f13bb35`) aplicados: `src/db/index.ts`, `src/db/index.test.ts`, `drizzle.config.ts` e o perfil ESLint `next-app`.
 - Validado: `pnpm check`; `drizzle-kit generate` gerou `drizzle/0000_catalog.sql`, revisado; migração aplicada duas vezes (idempotente) num PostgreSQL 16 local temporário pelo `scripts/migrate.mjs`, que também foi testado pulando sem `VERCEL_ENV=production`; teste de ponta a ponta do painel e da loja com esse banco. O PostgreSQL temporário foi encerrado e apagado.
 - Pendente: criar o banco Neon e `ADMIN_PASSWORD` na Vercel e conferir a primeira migração no log do build de produção.
+
+## Atualização de 23/10/2026: login por e-mail e cópia dos pedidos por e-mail
+
+- Painel: login com `ADMIN_EMAIL` e `ADMIN_PASSWORD`; `/painel` passou a ser renderizado por requisição (`connection()`), porque sem as variáveis no build ele era pré-renderizado como "desativado".
+- Pedidos por e-mail: API REST do Resend (`POST https://api.resend.com/emails`) chamada com `fetch`, sem dependência nova. Context7 continuou bloqueado pela política de rede; o formato da chamada segue a documentação pública do Resend e não foi testado contra a API real.
+- Validado: `pnpm check` (80 testes, com `fetch` simulado); teste no navegador com chave falsa: dois toques em "Copiar mensagem" geraram uma só chamada da Server Action, e a falha foi registrada no log sem o conteúdo do pedido.
+- Pendente: criar a conta no Resend, definir `RESEND_API_KEY` na Vercel e conferir um pedido real chegando no e-mail.
