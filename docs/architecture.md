@@ -14,7 +14,7 @@
 | Vitest | 5.0.5 | ambiente Node |
 | Node.js / pnpm | 22.22 / 10.28.0 | `engines` exige Node `^22.12.0 \|\| >=24.0.0` (Vitest 5) |
 
-Versões efetivas completas: `pnpm-lock.yaml`. Não há ORM nem driver de banco; `server-only` protege `env.ts` e `logger.ts`.
+Banco: Drizzle ORM 0.45.4 + `pg` 8.23.1 (PostgreSQL, Neon na Vercel), drizzle-kit 0.31.11. Versões efetivas completas: `pnpm-lock.yaml`. `server-only` protege `env.ts`, `logger.ts`, `db/`, `admin-*` e `catalog/load.ts`.
 
 ## Mapa do código
 
@@ -28,10 +28,19 @@ src/
 │   ├── contato/page.tsx     # WhatsApp da loja; renderizada por requisição (connection())
 │   └── globals.css       # Tailwind e tokens de cor claro/escuro
 ├── catalog/
-│   ├── models.ts         # catálogo tipado: modelos, tamanhos, cores, preços em centavos
+│   ├── models.ts         # modelos fixos, padrões de tamanhos/preços, tipo Catalog e helpers
+│   ├── rows.ts           # linhas do banco → Catalog; linhas iniciais a partir dos padrões
+│   ├── load.ts           # getCatalog(): banco por requisição, padrões sem DATABASE_URL ou em erro
+│   ├── admin-input.ts    # leitura dos formulários do painel (preço em reais, nome do tamanho)
+│   ├── admin-store.ts    # gravações do painel em transação; copia os padrões no 1º uso
 │   ├── services.ts       # serviços extras (site, Google, arte sob medida) e sites da vitrine
 │   └── models.test.ts
+├── app/painel/            # painel do vendedor: page.tsx e actions.ts (Server Actions com sessão)
+├── db/
+│   ├── index.ts          # getDb(): pool pg limitado e sob demanda
+│   └── schema/index.ts   # tabelas sizes, model_settings, model_sizes
 ├── components/
+│   ├── admin/            # login-form, model-editor, size-editor (Client Components do painel)
 │   ├── site-header.tsx         # cabeçalho com navegação (layout raiz)
 │   ├── order-flow.tsx          # Client Component: estado do pedido e navegação entre etapas
 │   ├── customize-form.tsx      # etapa 1: escolhas, textos, logo e prévia
@@ -77,6 +86,9 @@ src/
     └── logger.test.ts    # teste de redação do logger
 eslint-rules/             # regras locais quality/* e baseline Next compartilhada
 scripts/verify-quality-rules.mjs  # self-check das regras (RuleTester)
+scripts/migrate.mjs       # aplica drizzle/ só em build de produção da Vercel
+drizzle/                  # SQL versionado das migrações (0000_catalog.sql)
+drizzle.config.ts
 ```
 
 Implementado: fluxos 1 a 9 do PRODUCT.md.
@@ -91,20 +103,27 @@ Implementado: `src/lib/env.ts` e `src/lib/logger.ts` importam `server-only` e fa
 
 ## Dados e migrations
 
-**Não há persistência.** Decisão do produto para o MVP: catálogo de modelos num arquivo de configuração TypeScript tipado, versionado com o código; o pedido não é salvo no servidor e só existe na mensagem que o próprio cliente envia pelo WhatsApp. Não há `DATABASE_URL`, schema, `drizzle/` nem scripts `db:*`.
+O banco guarda **só o catálogo** editado no painel; pedidos continuam sem persistência (só na mensagem do WhatsApp).
 
-Motivos: o fechamento é manual no WhatsApp, não há painel para ler pedidos, e não guardar dados pessoais nem chaves Pix elimina obrigações de armazenamento e custo de banco.
+- **Tabelas** (`src/db/schema/index.ts`, SQL em `drizzle/0000_catalog.sql`): `sizes` (id, nome, descrição, formato, posição), `model_settings` (modelo, aparece na loja) e `model_sizes` (modelo, tamanho, preço em centavos > 0, esgotado), com chave composta e `on delete cascade` para o tamanho. Os 5 modelos ficam no código; as linhas referenciam seus ids.
+- **Leitura:** `getCatalog()` roda por requisição (`connection()`), em paralelo nas três tabelas. Sem `DATABASE_URL`, ou com tabelas vazias, usa `DEFAULT_CATALOG` (preços marcados como ilustrativos). Se o banco falhar, registra o erro no log e usa os padrões: a loja continua vendendo, mas "Esgotado" pode ficar desatualizado até o banco voltar.
+- **Escrita:** `admin-store.ts` grava em transação. O primeiro salvamento trava a tabela `sizes` e copia os padrões, para que editar um modelo não apague os outros. Salvar um modelo substitui as linhas dele em `model_sizes`; `update` e `delete` sempre têm `where`.
+- **Migrações:** `pnpm db:generate` gera SQL sem conexão, que é revisado e versionado. `scripts/migrate.mjs` roda antes do `next build` e aplica migrações **só** quando `VERCEL_ENV=production` e há `DATABASE_URL` (usa `DATABASE_URL_UNPOOLED` se existir). É uma exceção à regra do toolkit de não migrar no build: o vendedor não tem terminal. Previews e builds locais pulam, para que schema não mesclado nunca chegue ao banco de produção.
+- **Pool:** `pg.Pool` com no máximo 5 conexões, criado sob demanda e reaproveitado (`src/db/index.ts`, template do toolkit).
 
 ## Decisões
 
 | Decisão | Motivo | Alternativa | Revisar quando |
 |---|---|---|---|
-| Sem banco; catálogo em código | Requisito explícito do MVP; privacidade e custo | Drizzle + PostgreSQL (default do toolkit) | Houver painel do vendedor, histórico de pedidos ou pagamento online |
-| Perfil ESLint leve + `quality/no-direct-console` | Sem Drizzle não há guardas de ORM nem fronteira de dados a aplicar | Perfil completo `next-app` | Banco for adotado |
+| Catálogo no banco, editado em `/painel` (23/10/2026) | Pedido do vendedor: manter tamanhos, preços e estoque sem depender de PR | Edge Config da Vercel; continuar no código | Houver histórico de pedidos ou pagamento online |
+| Login por senha única (`ADMIN_PASSWORD`) e cookie HMAC de 7 dias, `httpOnly`, `sameSite=strict`, `path=/painel` | Um só dono; sem serviço externo. A senha é a chave de assinatura, então trocá-la derruba as sessões | Login Google | Mais de uma pessoa usar o painel |
+| Atraso de 1 s em senha errada, sem outro limite de tentativas | Não há armazenamento para contar tentativas por IP | Rate limit com Redis/Upstash | Sinais de tentativa de invasão |
+| Estoque como liga/desliga "Esgotado" | Pedidos fecham no WhatsApp; o site não sabe quando houve venda | Quantidade em estoque | Pedidos passarem a ser salvos |
+| Perfil ESLint completo `next-app` | Com Drizzle, guardas de `update/delete` e fronteira de dados | Perfil leve | — |
 | Pino e `env.ts` mantidos sem uso atual | Núcleo do toolkit; prontos para o primeiro código de servidor | Remover até haver uso | Se o MVP terminar sem nenhum código de servidor, avaliar remoção |
 | `typecheck` roda `next typegen` antes de `tsc` | `LayoutProps`/`PageProps` são tipos gerados; sem isso `tsc` falha num clone limpo | Depender de `next build` prévio | Next mudar a geração de tipos |
 | `@types/node@22` | Alinha ao runtime Node 22 e ao peer `^22 \|\| >=24` do Vitest 5 | `^20` do scaffold | Mudança de runtime |
-| `@next/env` não instalado | Só era usado pelo `drizzle.config.ts` do template | Instalar alinhado ao Next | Adoção de Drizzle |
+| `@next/env` 16.4.2 instalado | Carrega `.env.local` no `drizzle.config.ts` | — | — |
 | Preços em centavos inteiros, formatados com `Intl.NumberFormat("pt-BR")` | Evita arredondamento binário | `number` em reais | Houver cálculo de frete ou desconto |
 | Ilustração CSS/SVG no lugar de fotos | Não há fotos reais; a mesma peça é a prévia da personalização, dimensionada em `cqw` | Imagens de banco | Fotos reais disponíveis |
 | Etapas no mesmo Client Component, sem rota por etapa | Estado único em memória, voltar não perde nada, sem persistência | Uma rota por etapa com estado na URL | Precisar compartilhar ou retomar um pedido |

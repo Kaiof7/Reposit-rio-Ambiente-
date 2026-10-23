@@ -1,17 +1,16 @@
-// Typed catalog of plaque models. The MVP has no database (see PRODUCT.md):
-// this file is the source of truth for the storefront and, later, the order.
+// Plaque models are fixed in code (copy, icon, NFC defaults). Sizes, prices,
+// availability and "esgotado" come from the seller panel (database) and fall
+// back to the defaults below when no database is configured (see PRODUCT.md).
 
-// Prices, sizes and copy are reversible examples until the seller confirms
-// them ("a definir" in PRODUCT.md). Flip this flag when they are real.
-export const CATALOG_PRICES_ARE_EXAMPLES = true;
-
-export const SIZES = {
+// Default sizes and prices are reversible examples until the seller edits
+// them in the panel ("a definir" in PRODUCT.md).
+export const DEFAULT_SIZES = {
   "adesivo-5": { label: "Adesivo 5 × 5 cm", description: "Para balcão, caixa ou mesa", shape: "square" },
   "adesivo-8": { label: "Adesivo 8 × 8 cm", description: "Mais visível em parede ou vitrine", shape: "square" },
   "display-10x15": { label: "Display de acrílico 10 × 15 cm", description: "Fica em pé no balcão", shape: "portrait" },
 } as const;
 
-export type SizeId = keyof typeof SIZES;
+export type SizeShape = "square" | "portrait";
 
 // Every background keeps white text at WCAG AA contrast (≥ 4.5:1).
 export const BACKGROUNDS = {
@@ -32,7 +31,7 @@ export type PlaqueModel = {
   defaultCallToAction: string;
   defaultBackgroundId: BackgroundId;
   // Integer cents to avoid binary floating-point rounding.
-  sizes: { id: SizeId; priceCents: number }[];
+  sizes: { id: keyof typeof DEFAULT_SIZES; priceCents: number }[];
 };
 
 export const MODELS = [
@@ -98,10 +97,40 @@ export const MODELS = [
 
 export type ModelId = (typeof MODELS)[number]["id"];
 
-export function startingPriceCents(model: PlaqueModel) {
-  return Math.min(...model.sizes.map((size) => size.priceCents));
+export type CatalogSize = { id: string; label: string; description: string; shape: SizeShape };
+export type CatalogOffer = { id: string; priceCents: number; soldOut: boolean };
+export type CatalogModel = Omit<PlaqueModel, "id" | "sizes"> & { id: ModelId; available: boolean; sizes: CatalogOffer[] };
+export type Catalog = {
+  models: CatalogModel[];
+  sizes: Record<string, CatalogSize>;
+  // True while the code defaults are shown (no panel data yet).
+  pricesAreExamples: boolean;
+};
+
+export const DEFAULT_CATALOG: Catalog = {
+  models: MODELS.map((model) => ({
+    ...model,
+    available: true,
+    sizes: model.sizes.map((size) => ({ ...size, soldOut: false })),
+  })),
+  sizes: Object.fromEntries(Object.entries(DEFAULT_SIZES).map(([id, size]) => [id, { id, ...size }])),
+  pricesAreExamples: true,
+};
+
+export function findModel(catalog: Catalog, id: string | undefined) {
+  return catalog.models.find((model) => model.id === id);
 }
 
-export function findModel(id: string | undefined) {
-  return MODELS.find((model) => model.id === id);
+export function availableModels(catalog: Catalog) {
+  return catalog.models.filter((model) => model.available);
+}
+
+export function orderableSizes(model: CatalogModel) {
+  return model.sizes.filter((size) => !size.soldOut);
+}
+
+// Cheapest size that can still be ordered; null when everything is sold out.
+export function startingPriceCents(model: CatalogModel) {
+  const prices = orderableSizes(model).map((size) => size.priceCents);
+  return prices.length ? Math.min(...prices) : null;
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DEFAULT_CATALOG } from "@/catalog/models";
 import { buildOrderMessage, whatsAppUrl, type Order } from "./message";
 
 const base: Order = {
@@ -20,7 +21,7 @@ const base: Order = {
 
 describe("buildOrderMessage", () => {
   it("lists the plaque, chip, QR code and customer in readable sections", () => {
-    expect(buildOrderMessage(base)).toBe(
+    expect(buildOrderMessage(DEFAULT_CATALOG, base)).toBe(
       [
         "*Novo pedido: Sua Plaquinha NFC*",
         "",
@@ -53,7 +54,7 @@ describe("buildOrderMessage", () => {
   });
 
   it("includes Pix data, extra services, custom art and links to create", () => {
-    const message = buildOrderMessage({
+    const message = buildOrderMessage(DEFAULT_CATALOG, {
       ...base,
       customization: { ...base.customization, artStyle: "designer", designerNotes: "Azul e amarelo" },
       nfc: { destination: "avaliacao-google", url: null, creation: "google" },
@@ -76,14 +77,19 @@ describe("buildOrderMessage", () => {
   });
 
   it("describes link QR codes", () => {
-    expect(buildOrderMessage({ ...base, qr: { mode: "link", source: "chip" } })).toContain("*QR code: link*\nLink: o mesmo do chip");
-    expect(buildOrderMessage({ ...base, qr: { mode: "link", source: "outro", url: null, creation: "site" } })).toContain("Link: criar (pedido de site)");
+    expect(buildOrderMessage(DEFAULT_CATALOG, { ...base, qr: { mode: "link", source: "chip" } })).toContain("*QR code: link*\nLink: o mesmo do chip");
+    expect(buildOrderMessage(DEFAULT_CATALOG, { ...base, qr: { mode: "link", source: "outro", url: null, creation: "site" } })).toContain("Link: criar (pedido de site)");
   });
 });
 
 it("encodes the whole message into the wa.me link", () => {
-  const message = buildOrderMessage(base);
+  const message = buildOrderMessage(DEFAULT_CATALOG, base);
   const url = whatsAppUrl("5511999998888", message);
   expect(url.startsWith("https://wa.me/5511999998888?text=")).toBe(true);
   expect(new URL(url).searchParams.get("text")).toBe(message);
+});
+
+it("drops the example-price caveat once prices come from the panel", () => {
+  const message = buildOrderMessage({ ...DEFAULT_CATALOG, pricesAreExamples: false }, base);
+  expect(message).toContain("Valor: 2 × R$\u00a029,90 = R$\u00a059,80\n");
 });

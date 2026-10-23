@@ -1,4 +1,5 @@
-import { customizationSchema, type CustomizationInput } from "@/order/customization";
+import type { Catalog } from "@/catalog/models";
+import { customizationSchemaFor, type CustomizationInput } from "@/order/customization";
 import { customerSchema, type CustomerInput } from "@/order/customer";
 import type { Order } from "@/order/message";
 import { nfcSchema, type NfcInput } from "@/order/nfc";
@@ -15,8 +16,8 @@ export type OrderInputs = {
 
 // Revalidates every step and returns the order, or null if any step is
 // incomplete. Service details are kept only for the services requested.
-export function assembleOrder(inputs: OrderInputs, services: readonly DetailsService[]): Order | null {
-  const customization = customizationSchema.safeParse(inputs.customization);
+export function assembleOrder(catalog: Catalog, inputs: OrderInputs, services: readonly DetailsService[]): Order | null {
+  const customization = customizationSchemaFor(catalog).safeParse(inputs.customization);
   const nfc = nfcSchema.safeParse(inputs.nfc);
   const qr = qrSchema.safeParse(inputs.qr);
   const customer = customerSchema.safeParse(inputs.customer);

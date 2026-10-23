@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { BACKGROUNDS, MODELS, SIZES, type BackgroundId } from "@/catalog/models";
+import { BACKGROUNDS, availableModels, findModel, startingPriceCents, type BackgroundId, type Catalog } from "@/catalog/models";
 import { PlaqueIllustration } from "@/components/plaque-illustration";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,7 @@ import {
   CALL_TO_ACTION_MAX,
   DESIGNER_NOTES_MAX,
   changeModel,
-  customizationSchema,
+  customizationSchemaFor,
   type CustomizationField,
   type CustomizationInput,
 } from "@/order/customization";
@@ -32,18 +32,21 @@ const FIELD_FOCUS_TARGET: Record<CustomizationField, string> = {
 
 
 type CustomizeFormProps = {
+  catalog: Catalog;
   values: CustomizationInput;
   onChange: (values: CustomizationInput) => void;
   onNext: () => void;
 };
 
-export function CustomizeForm({ values, onChange: update, onNext }: CustomizeFormProps) {
+export function CustomizeForm({ catalog, values, onChange: update, onNext }: CustomizeFormProps) {
   const [showErrors, setShowErrors] = useState(false);
 
-  const result = customizationSchema.safeParse(values);
+  const result = customizationSchemaFor(catalog).safeParse(values);
   const errors = showErrors && !result.success ? fieldErrors<CustomizationField>(result.error) : {};
-  const model = MODELS.find((candidate) => candidate.id === values.modelId) ?? MODELS[0];
+  const model = findModel(catalog, values.modelId) ?? catalog.models[0];
   const size = model.sizes.find((candidate) => candidate.id === values.sizeId);
+  const sizeInfo = size && catalog.sizes[size.id];
+  const portrait = sizeInfo?.shape === "portrait";
 
   function text(field: "businessName" | "callToAction") {
     return (event: ChangeEvent<HTMLInputElement>) => update({ ...values, [field]: event.target.value });
@@ -76,17 +79,17 @@ export function CustomizeForm({ values, onChange: update, onNext }: CustomizeFor
     <div className="grid gap-8 lg:grid-cols-[1fr_20rem] lg:items-start">
       <figure data-sticky-preview className="sticky top-0 z-10 -mx-4 flex items-center gap-4 border-b border-foreground/15 bg-background px-4 py-3 lg:order-last lg:top-8 lg:mx-0 lg:flex-col lg:border-0 lg:p-0">
         <PlaqueIllustration
-          className={cn("shrink-0", SIZES[values.sizeId as keyof typeof SIZES]?.shape === "portrait" ? "w-24" : "w-32", "lg:w-full")}
+          className={cn("shrink-0", portrait ? "w-24" : "w-32", "lg:w-full")}
           modelId={values.modelId}
           backgroundId={values.backgroundId}
-          sizeId={size?.id}
+          portrait={portrait}
           businessName={values.businessName.trim() || "Nome do seu negócio"}
           callToAction={values.callToAction.trim() || "Sua frase"}
           showLogo={values.willSendLogo}
         />
         <figcaption className="text-sm text-foreground/80">
           Prévia ilustrativa
-          {size && <span className="block">{SIZES[size.id].label}</span>}
+          {sizeInfo && <span className="block">{sizeInfo.label}</span>}
         </figcaption>
       </figure>
 
@@ -94,17 +97,19 @@ export function CustomizeForm({ values, onChange: update, onNext }: CustomizeFor
         <fieldset id="grupo-modelo" className="flex flex-col gap-2" aria-describedby={describedBy("modelId")}>
           <legend className="mb-2 text-lg font-semibold">Modelo</legend>
           <div className="grid gap-2 sm:grid-cols-2">
-            {MODELS.map((option) => (
+            {availableModels(catalog).map((option) => (
               <label key={option.id} className={optionClass}>
                 <input
                   type="radio"
                   name="modelo"
                   value={option.id}
                   checked={values.modelId === option.id}
-                  onChange={() => update(changeModel(values, option.id))}
+                  disabled={startingPriceCents(option) === null}
+                  onChange={() => update(changeModel(catalog, values, option.id))}
                   className="size-5 accent-foreground"
                 />
                 {option.name}
+                {startingPriceCents(option) === null && <span className="ml-auto text-sm">Esgotado</span>}
               </label>
             ))}
           </div>
@@ -120,14 +125,15 @@ export function CustomizeForm({ values, onChange: update, onNext }: CustomizeFor
                 name="tamanho"
                 value={option.id}
                 checked={values.sizeId === option.id}
+                disabled={option.soldOut}
                 onChange={() => update({ ...values, sizeId: option.id })}
                 className="size-5 accent-foreground"
               />
               <span className="flex-1">
-                <span className="block font-medium">{SIZES[option.id].label}</span>
-                <span className="text-sm text-foreground/70">{SIZES[option.id].description}</span>
+                <span className="block font-medium">{catalog.sizes[option.id]?.label ?? option.id}</span>
+                <span className="text-sm text-foreground/70">{catalog.sizes[option.id]?.description}</span>
               </span>
-              <span className="tabular-nums">{formatPrice(option.priceCents)}</span>
+              <span className="tabular-nums">{option.soldOut ? "Esgotado" : formatPrice(option.priceCents)}</span>
             </label>
           ))}
           {errorText("sizeId")}

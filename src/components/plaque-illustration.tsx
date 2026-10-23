@@ -1,4 +1,4 @@
-import { BACKGROUNDS, SIZES, type BackgroundId, type ModelId, type SizeId } from "@/catalog/models";
+import { BACKGROUNDS, type BackgroundId, type ModelId } from "@/catalog/models";
 import { cn } from "@/lib/utils";
 
 // Illustrative rendering of the plaque: stands in for product photos on the
@@ -16,7 +16,7 @@ type PlaqueIllustrationProps = {
   backgroundId: BackgroundId;
   businessName: string;
   callToAction: string;
-  sizeId?: SizeId;
+  portrait?: boolean;
   showLogo?: boolean;
   className?: string;
 };
@@ -26,11 +26,10 @@ export function PlaqueIllustration({
   backgroundId,
   businessName,
   callToAction,
-  sizeId,
+  portrait = false,
   showLogo = false,
   className,
 }: PlaqueIllustrationProps) {
-  const portrait = sizeId !== undefined && SIZES[sizeId].shape === "portrait";
   return (
     // Sizes follow the plaque width (cqw) so it reads the same at any scale.
     <div className={cn("@container", className)}>

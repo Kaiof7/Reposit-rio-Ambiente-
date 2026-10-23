@@ -10,8 +10,8 @@ Objetivo: o cliente escolhe e personaliza a plaquinha sozinho, pelo celular, e c
 
 ## Público e papéis
 
-- **Cliente (comprador):** dono de restaurante, salão, loja ou profissional autônomo no Brasil. Pouco técnico, compra pelo celular. Único papel do site; não há login.
-- **Vendedor:** recebe a mensagem no WhatsApp, produz a arte final, grava o chip e combina pagamento e entrega fora do site. Não usa painel no MVP.
+- **Cliente (comprador):** dono de restaurante, salão, loja ou profissional autônomo no Brasil. Pouco técnico, compra pelo celular. Não faz login.
+- **Vendedor:** recebe a mensagem no WhatsApp, produz a arte final, grava o chip e combina pagamento e entrega fora do site. Usa o painel `/painel` (senha única) para manter tamanhos, preços, disponibilidade dos modelos e estoque ("Esgotado").
 
 ## Fluxos da versão inicial
 
@@ -41,8 +41,10 @@ Em ordem de prioridade:
 
 ## Fora de escopo
 
-- Pagamento online, login, contas e painel administrativo. O pedido é fechado pelo WhatsApp.
-- Banco de dados e persistência de pedidos no servidor (evolução futura, ver abaixo).
+- Pagamento online e contas de cliente. O pedido é fechado pelo WhatsApp.
+- Persistência de pedidos no servidor (evolução futura). O banco guarda só o catálogo editado no painel.
+- Criar ou renomear modelos pelo painel: os 5 modelos (textos, ícones, comportamento do Pix e do NFC) continuam no código.
+- Baixa automática de estoque: como o pedido fecha no WhatsApp, o vendedor marca "Esgotado" manualmente.
 - Upload de logo: o cliente marca no formulário que enviará o logo pelo WhatsApp.
 - Geração da arte final e do QR code definitivo: o site faz só pré-visualização; o vendedor produz a arte.
 - Envio automático de mensagens: o próprio cliente envia a mensagem no WhatsApp dele.
@@ -63,7 +65,7 @@ Em ordem de prioridade:
 
 - Nome da loja: **Sua Plaquinha NFC**, escolhido pelo vendedor em 16/10/2026 (antes "Plaquinhas NFC"). Aparece no cabeçalho, nos títulos das páginas e no topo da mensagem do pedido.
 - Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, pnpm, Node.js 22. Detalhes em `docs/architecture.md` e `docs/setup.md`.
-- **Sem banco de dados no MVP.** O catálogo de modelos fica num arquivo de configuração tipado no código; o pedido não é salvo no servidor e segue apenas na mensagem do WhatsApp. Justificativa: o fechamento acontece no WhatsApp, não há painel para consultar pedidos e não guardar dados pessoais nem chaves Pix reduz risco e custo de operação. Por isso o default do toolkit (Drizzle ORM + PostgreSQL) não foi instalado. **Evolução futura:** persistir pedidos (Drizzle + PostgreSQL) quando houver painel do vendedor, histórico ou pagamento online; isso exigirá política de privacidade e retenção de dados.
+- **Banco só para o catálogo (desde 23/10/2026).** Antes o catálogo ficava no código e não havia banco. A pedido do vendedor, o painel `/painel` passou a editar tamanhos, preços, disponibilidade dos modelos e "Esgotado", guardados em PostgreSQL (Neon via Vercel, plano gratuito) com Drizzle ORM, o padrão do projeto. Os pedidos continuam sem ser salvos: seguem só na mensagem do WhatsApp, e o site não guarda dados do cliente nem chaves Pix. Sem `DATABASE_URL`, a loja usa o catálogo padrão do código. Acesso ao painel por senha única em `ADMIN_PASSWORD`.
 - Validação com Zod no cliente; não há rota de servidor recebendo pedidos.
 - O QR code é gerado no navegador apenas para pré-visualização.
 
@@ -83,6 +85,8 @@ Hipóteses reversíveis (podem mudar sem retrabalho grande):
 - O site aceita domínio sem `https://` e, no Instagram, só o `@perfil`, convertendo para o link completo mostrado ao cliente antes de seguir.
 
 Pendências que dependem do vendedor (não inventar):
+
+- **Criar o banco e a senha do painel na Vercel:** Storage → criar banco Neon ligado ao projeto (define `DATABASE_URL`) e a variável `ADMIN_PASSWORD` (12+ caracteres); depois, novo deploy de produção, que aplica as migrações.
 
 - **Preços e prazos dos serviços extras** (site, cadastro no Google, arte sob medida): o site mostra "Valor combinado pelo WhatsApp" até serem definidos.
 - **Descrição e imagem dos sites da vitrine:** o ambiente de desenvolvimento não acessou https://orcamento-assistencia-celular.vercel.app nem https://lanchonete-site-ruddy.vercel.app (adicionado em 18/10/2026, descrição provisória "Site para uma lanchonete.") nem https://santa-maria-orcamento.vercel.app (adicionado em 20/10/2026, descrição provisória "Site de orçamento para a Santa Maria."); a descrição atual ("Site de orçamento para uma assistência de celulares") foi deduzida do endereço e precisa ser confirmada. A vitrine usa uma ilustração de navegador até haver captura de tela real.

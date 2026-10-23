@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BACKGROUNDS, MODELS, SIZES, type ModelId } from "@/catalog/models";
+import { BACKGROUNDS, findModel, type Catalog, type ModelId } from "@/catalog/models";
 import { SERVICES } from "@/catalog/services";
 import { CustomizeForm } from "@/components/customize-form";
 import { NfcLinkStep } from "@/components/nfc-link-step";
@@ -21,9 +21,11 @@ type StepId = "arte" | "link" | "qr" | "servicos" | "dados" | "resumo";
 
 const qrFor = (modelId: ModelId): QrInput => ({ ...initialQr, mode: modelId === "pix" ? "pix" : "nenhum" });
 
-export function OrderFlow({ initialModelId, whatsappNumber }: { initialModelId: ModelId; whatsappNumber: string | null }) {
+type OrderFlowProps = { catalog: Catalog; initialModelId: ModelId; whatsappNumber: string | null };
+
+export function OrderFlow({ catalog, initialModelId, whatsappNumber }: OrderFlowProps) {
   const [stepId, setStepId] = useState<StepId>("arte");
-  const [customization, setCustomization] = useState(() => initialCustomization(initialModelId));
+  const [customization, setCustomization] = useState(() => initialCustomization(catalog, initialModelId));
   const [nfc, setNfc] = useState<NfcInput>(() => ({
     destination: defaultDestinationFor(initialModelId),
     url: "",
@@ -83,10 +85,10 @@ export function OrderFlow({ initialModelId, whatsappNumber }: { initialModelId: 
     if (!qrTouched.current) setQr(qrFor(value.modelId));
   }
 
-  const order = step.id === "resumo" ? assembleOrder({ customization, nfc, qr, serviceDetails, customer }, services) : null;
-  const unitPrice = MODELS.find((candidate) => candidate.id === customization.modelId)?.sizes.find((size) => size.id === customization.sizeId);
-  const model = MODELS.find((candidate) => candidate.id === customization.modelId) ?? MODELS[0];
-  const sizeLabel = SIZES[customization.sizeId as keyof typeof SIZES]?.label;
+  const order = step.id === "resumo" ? assembleOrder(catalog, { customization, nfc, qr, serviceDetails, customer }, services) : null;
+  const model = findModel(catalog, customization.modelId) ?? catalog.models[0];
+  const unitPrice = model.sizes.find((size) => size.id === customization.sizeId);
+  const sizeLabel = catalog.sizes[customization.sizeId]?.label;
   const back = () => goTo(steps[index - 1].id);
 
   return (
@@ -106,7 +108,7 @@ export function OrderFlow({ initialModelId, whatsappNumber }: { initialModelId: 
         )}
       </div>
 
-      {step.id === "arte" && <CustomizeForm values={customization} onChange={changeCustomization} onNext={next} />}
+      {step.id === "arte" && <CustomizeForm catalog={catalog} values={customization} onChange={changeCustomization} onNext={next} />}
       {step.id === "link" && (
         <NfcLinkStep
           values={nfc}
@@ -146,7 +148,7 @@ export function OrderFlow({ initialModelId, whatsappNumber }: { initialModelId: 
         />
       )}
       {step.id === "resumo" && (
-        <SummaryStep message={order ? buildOrderMessage(order) : null} whatsappNumber={whatsappNumber} onBack={back} />
+        <SummaryStep message={order ? buildOrderMessage(catalog, order) : null} whatsappNumber={whatsappNumber} onBack={back} />
       )}
 
     </section>

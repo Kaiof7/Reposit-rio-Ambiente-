@@ -4,7 +4,7 @@
 
 - Produto e escopo: `PRODUCT.md`. Interface 100% em português do Brasil, mobile-first.
 - Stack: Next.js 16.4 (App Router, Turbopack), React 19.3, TypeScript 5.9 strict, Tailwind CSS 4, Zod 4, Vitest 5. Node.js 22.12+ e pnpm 10.
-- Sem banco de dados no MVP (decisão em `PRODUCT.md` e `docs/architecture.md`). Não instale ORM/driver sem mudar essa decisão.
+- PostgreSQL + Drizzle só para o catálogo editado em `/painel`; pedidos não são salvos (decisão em `PRODUCT.md` e `docs/architecture.md`).
 - Setup e validações: `docs/setup.md`.
 
 ## Comandos canônicos
@@ -16,6 +16,7 @@
 - Regras locais de lint: `pnpm lint:rules`
 - Testes: `pnpm test` (`pnpm test:watch` em desenvolvimento)
 - Build: `pnpm build`
+- Banco: `pnpm db:generate` (gera SQL sem conectar), `pnpm db:migrate` (aplica no banco de `DATABASE_URL`)
 - Verificar base: `pnpm check`
 
 ## Acordos de trabalho
@@ -40,8 +41,9 @@
 
 ## Padrões e documentação
 
-- Persistência: nenhuma no MVP. Se pedidos passarem a ser salvos, use Drizzle ORM + PostgreSQL (default do toolkit), registre a mudança em `PRODUCT.md` e `docs/architecture.md` e troque para o perfil ESLint completo.
+- Persistência: Drizzle ORM + PostgreSQL (`src/db/`), schema em `src/db/schema/`, SQL em `drizzle/` via `pnpm db:generate`. Migrações aplicadas só no build de produção da Vercel (`scripts/migrate.mjs`). Pedidos não são salvos; se isso mudar, registre em `PRODUCT.md` e `docs/architecture.md`.
 - Não armazene dados do cliente nem chaves Pix (nem em `localStorage`). O pedido sai apenas na mensagem do WhatsApp.
+- Server Actions do painel são endpoints públicos: toda escrita verifica a sessão (`isAdmin`) e valida a entrada com Zod.
 - Valide entradas e ambiente com Zod. Formulários validam no cliente com erro junto do campo.
 - `NEXT_PUBLIC_*` é público e embutido no bundle: só o número do WhatsApp do vendedor fica ali. Segredos nunca entram em variáveis públicas.
 - Pino (`src/lib/logger.ts`) é exclusivo do servidor; não importe em Client Components. Remova saída de debug do cliente.
