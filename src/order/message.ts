@@ -1,4 +1,4 @@
-import { BACKGROUNDS, CATALOG_PRICES_ARE_EXAMPLES, MODELS, SIZES } from "@/catalog/models";
+import { BACKGROUNDS, findModel, type Catalog } from "@/catalog/models";
 import { SERVICES } from "@/catalog/services";
 import { formatPrice } from "@/lib/format";
 import type { Customization } from "@/order/customization";
@@ -26,17 +26,18 @@ const CREATE_LABEL: Record<DetailsService, string> = {
   google: "criar (pedido de cadastro no Google)",
 };
 
-export function orderTotalCents(order: Order) {
-  const model = MODELS.find((candidate) => candidate.id === order.customization.modelId);
+export function orderTotalCents(catalog: Catalog, order: Order) {
+  const model = findModel(catalog, order.customization.modelId);
   const size = model?.sizes.find((candidate) => candidate.id === order.customization.sizeId);
   return size ? { unit: size.priceCents, total: size.priceCents * order.customer.quantity } : null;
 }
 
 // Plain text for WhatsApp: *bold* section titles, one "Label: value" per line.
-export function buildOrderMessage(order: Order) {
+export function buildOrderMessage(catalog: Catalog, order: Order) {
   const { customization: art, nfc, qr, services, customer } = order;
-  const model = MODELS.find((candidate) => candidate.id === art.modelId);
-  const price = orderTotalCents(order);
+  const model = findModel(catalog, art.modelId);
+  const price = orderTotalCents(catalog, order);
+  const examples = catalog.pricesAreExamples;
   const lines: string[] = ["*Novo pedido: Sua Plaquinha NFC*", ""];
   const section = (title: string, entries: (string | false | null | undefined)[]) => {
     lines.push(`*${title}*`, ...entries.filter((entry): entry is string => Boolean(entry)), "");
@@ -44,7 +45,7 @@ export function buildOrderMessage(order: Order) {
 
   section("Plaquinha", [
     `Modelo: ${model?.name ?? art.modelId}`,
-    `Tamanho: ${SIZES[art.sizeId as keyof typeof SIZES]?.label ?? art.sizeId}`,
+    `Tamanho: ${catalog.sizes[art.sizeId]?.label ?? art.sizeId}`,
     `Cor de fundo: ${BACKGROUNDS[art.backgroundId].label}`,
     `Nome do negócio: ${art.businessName}`,
     `Frase: ${art.callToAction}`,
@@ -53,7 +54,7 @@ export function buildOrderMessage(order: Order) {
     art.artStyle === "designer" && art.designerNotes && `Ideias para a arte: ${art.designerNotes}`,
     `Quantidade: ${customer.quantity}`,
     price &&
-      `Valor${CATALOG_PRICES_ARE_EXAMPLES ? " de referência" : ""}: ${customer.quantity} × ${formatPrice(price.unit)} = ${formatPrice(price.total)}${CATALOG_PRICES_ARE_EXAMPLES ? " (a confirmar)" : ""}`,
+      `Valor${examples ? " de referência" : ""}: ${customer.quantity} × ${formatPrice(price.unit)} = ${formatPrice(price.total)}${examples ? " (a confirmar)" : ""}`,
   ]);
 
   section("Chip NFC", [

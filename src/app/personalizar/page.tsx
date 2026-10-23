@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MODELS, findModel } from "@/catalog/models";
+import { availableModels, startingPriceCents } from "@/catalog/models";
+import { getCatalog } from "@/catalog/load";
 import { OrderFlow } from "@/components/order-flow";
 import { findWhatsAppNumber } from "@/lib/public-env";
 
@@ -11,7 +12,10 @@ export const metadata: Metadata = {
 
 export default async function CustomizePage(props: PageProps<"/personalizar">) {
   const { modelo } = await props.searchParams;
-  const model = findModel(typeof modelo === "string" ? modelo : undefined) ?? MODELS[0];
+  const catalog = await getCatalog();
+  // Only models with at least one size in stock can start an order.
+  const models = availableModels(catalog).filter((candidate) => startingPriceCents(candidate) !== null);
+  const model = models.find((candidate) => candidate.id === modelo) ?? models[0];
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12">
@@ -22,8 +26,14 @@ export default async function CustomizePage(props: PageProps<"/personalizar">) {
         <h1 className="text-3xl font-semibold tracking-tight">Monte sua plaquinha</h1>
         <p className="text-foreground/80">Em poucas etapas, sem cadastro. A arte final é feita pela nossa equipe.</p>
       </div>
-      {/* key resets the flow when the model in the URL changes. */}
-      <OrderFlow key={model.id} initialModelId={model.id} whatsappNumber={findWhatsAppNumber()} />
+      {model ? (
+        // key resets the flow when the model in the URL changes.
+        <OrderFlow key={model.id} catalog={catalog} initialModelId={model.id} whatsappNumber={findWhatsAppNumber()} />
+      ) : (
+        <p className="rounded-xl bg-foreground/5 p-4 leading-relaxed">
+          Nenhum modelo está disponível no momento. Fale com a gente pela página de contato.
+        </p>
+      )}
     </main>
   );
 }

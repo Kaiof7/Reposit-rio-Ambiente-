@@ -1,4 +1,6 @@
-import { CATALOG_PRICES_ARE_EXAMPLES, MODELS } from "@/catalog/models";
+import Link from "next/link";
+import { availableModels } from "@/catalog/models";
+import { getCatalog } from "@/catalog/load";
 import { ModelCard } from "@/components/model-card";
 import { SAMPLE_SITES, SERVICES, SERVICE_PRICE_NOTE } from "@/catalog/services";
 import { focusRing } from "@/components/styles";
@@ -16,7 +18,9 @@ const USES = [
   { place: "Profissionais autônomos", text: "Seu site ou agenda online a um toque de distância." },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const catalog = await getCatalog();
+  const models = availableModels(catalog);
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-16 px-4 py-10 sm:py-16">
       <section aria-labelledby="titulo" className="flex max-w-2xl flex-col gap-4">
@@ -65,15 +69,25 @@ export default function Home() {
       <section id="modelos" aria-labelledby="titulo-modelos" className="flex scroll-mt-6 flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h2 id="titulo-modelos" className="text-2xl font-semibold">Modelos</h2>
-          {CATALOG_PRICES_ARE_EXAMPLES && (
+          {catalog.pricesAreExamples && (
             <p className="text-foreground/80">Valores ilustrativos. O preço final é confirmado no WhatsApp.</p>
           )}
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {MODELS.map((model) => (
-            <ModelCard key={model.id} model={model} />
-          ))}
-        </div>
+        {models.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {models.map((model) => (
+              <ModelCard key={model.id} model={model} sizes={catalog.sizes} />
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-xl bg-foreground/5 p-4 leading-relaxed">
+            Nenhum modelo está disponível no momento.{" "}
+            <Link href="/contato" className={`underline underline-offset-4 ${focusRing}`}>
+              Fale com a gente
+            </Link>{" "}
+            para saber quando voltam.
+          </p>
+        )}
       </section>
       <section aria-labelledby="titulo-servicos" className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">

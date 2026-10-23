@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+export const databaseUrlSchema = z.string().refine((value) => {
+  try {
+    const url = new URL(value);
+    return ["postgres:", "postgresql:"].includes(url.protocol) && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+});
+
+// Single seller password for /painel; long enough to resist guessing.
+export const adminPasswordSchema = z.string().min(12);
+
 export const logLevelSchema = z.enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"]).default("info");
 
 // Brazilian WhatsApp number in the digits-only format wa.me expects:

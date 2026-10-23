@@ -84,3 +84,10 @@ Revisão sugerida após essa entrega: **3 ciclos** de code review (escopo pequen
 ```text
 Faça 3 ciclos de code review do catálogo e da vitrine: 1) acessibilidade/mobile com web-design-guidelines; 2) tipos do catálogo e limites Server/Client com vercel-react-best-practices; 3) revisão integrada. Registre achados com severidade, local e evidência, corrija os autorizados e rode pnpm check ao final.
 ```
+
+## Atualização de 23/10/2026: painel do vendedor
+
+- Dependências: `drizzle-orm` 0.45.4 e `pg` 8.23.1 (produção); `drizzle-kit` 0.31.11, `@types/pg` 8, `eslint-plugin-drizzle` 0.2.3 e `@next/env` 16.4.2 (desenvolvimento). O canal `latest` foi conferido no registry; as tags 1.0.0-beta foram ignoradas.
+- Templates do toolkit (revisão `f13bb35`) aplicados: `src/db/index.ts`, `src/db/index.test.ts`, `drizzle.config.ts` e o perfil ESLint `next-app`.
+- Validado: `pnpm check`; `drizzle-kit generate` gerou `drizzle/0000_catalog.sql`, revisado; migração aplicada duas vezes (idempotente) num PostgreSQL 16 local temporário pelo `scripts/migrate.mjs`, que também foi testado pulando sem `VERCEL_ENV=production`; teste de ponta a ponta do painel e da loja com esse banco. O PostgreSQL temporário foi encerrado e apagado.
+- Pendente: criar o banco Neon e `ADMIN_PASSWORD` na Vercel e conferir a primeira migração no log do build de produção.

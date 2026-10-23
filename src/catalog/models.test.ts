@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BACKGROUNDS, MODELS, SIZES, findModel, startingPriceCents } from "./models";
+import { BACKGROUNDS, DEFAULT_CATALOG, DEFAULT_SIZES, MODELS, availableModels, findModel, startingPriceCents, type CatalogModel } from "./models";
 
 describe("catalog", () => {
   it("covers the storefront models with unique URL-safe ids", () => {
@@ -15,7 +15,7 @@ describe("catalog", () => {
       const sizeIds = model.sizes.map((size) => size.id);
       expect(new Set(sizeIds).size).toBe(sizeIds.length);
       for (const size of model.sizes) {
-        expect(SIZES).toHaveProperty(size.id);
+        expect(DEFAULT_SIZES).toHaveProperty(size.id);
         expect(Number.isInteger(size.priceCents)).toBe(true);
         expect(size.priceCents).toBeGreaterThan(0);
       }
@@ -27,15 +27,23 @@ describe("catalog", () => {
   });
 
   it("finds models by id and ignores unknown ids", () => {
-    expect(findModel("pix")?.name).toBe("Pix");
-    expect(findModel("nao-existe")).toBeUndefined();
-    expect(findModel(undefined)).toBeUndefined();
+    expect(findModel(DEFAULT_CATALOG, "pix")?.name).toBe("Pix");
+    expect(findModel(DEFAULT_CATALOG, "nao-existe")).toBeUndefined();
+    expect(findModel(DEFAULT_CATALOG, undefined)).toBeUndefined();
   });
 
-  it("uses the cheapest size as the starting price", () => {
-    expect(startingPriceCents({ ...MODELS[0], sizes: [
-      { id: "display-10x15", priceCents: 5990 },
-      { id: "adesivo-5", priceCents: 1990 },
-    ] })).toBe(1990);
+  it("uses the cheapest size still in stock as the starting price", () => {
+    const model: CatalogModel = { ...DEFAULT_CATALOG.models[0], sizes: [
+      { id: "display-10x15", priceCents: 5990, soldOut: false },
+      { id: "adesivo-5", priceCents: 1990, soldOut: true },
+    ] };
+    expect(startingPriceCents(model)).toBe(5990);
+    expect(startingPriceCents({ ...model, sizes: model.sizes.map((size) => ({ ...size, soldOut: true })) })).toBeNull();
+  });
+
+  it("lists only available models", () => {
+    const catalog = { ...DEFAULT_CATALOG, models: DEFAULT_CATALOG.models.map((model) => ({ ...model, available: model.id !== "pix" })) };
+    expect(availableModels(catalog).map((model) => model.id)).not.toContain("pix");
+    expect(DEFAULT_CATALOG.pricesAreExamples).toBe(true);
   });
 });

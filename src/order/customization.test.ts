@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { changeModel, customizationSchema, initialCustomization } from "./customization";
+import { DEFAULT_CATALOG, type Catalog } from "@/catalog/models";
+import { changeModel, customizationSchemaFor, initialCustomization } from "./customization";
 import { fieldErrors } from "./field-errors";
 
-const valid = { ...initialCustomization("avaliacao-google"), businessName: "  Padaria Pão Quente " };
+const catalog = DEFAULT_CATALOG;
+const customizationSchema = customizationSchemaFor(catalog);
+const valid = { ...initialCustomization(catalog, "avaliacao-google"), businessName: "  Padaria Pão Quente " };
 
 describe("customization schema", () => {
   it("accepts a complete customization and trims the texts", () => {
@@ -39,13 +42,13 @@ describe("customization schema", () => {
 
 describe("changing model", () => {
   it("follows the new model defaults the customer had not changed", () => {
-    const next = changeModel(initialCustomization("avaliacao-google"), "pix");
+    const next = changeModel(catalog, initialCustomization(catalog, "avaliacao-google"), "pix");
     expect(next).toMatchObject({ modelId: "pix", sizeId: "adesivo-8", backgroundId: "verde", callToAction: "Pague com Pix" });
   });
 
   it("keeps what the customer chose or typed", () => {
     const edited = { ...valid, sizeId: "display-10x15", backgroundId: "vinho" as const, callToAction: "Deixe 5 estrelas" };
-    const next = changeModel(edited, "instagram");
+    const next = changeModel(catalog, edited, "instagram");
     expect(next).toMatchObject({
       modelId: "instagram",
       sizeId: "display-10x15",
@@ -53,5 +56,33 @@ describe("changing model", () => {
       callToAction: "Deixe 5 estrelas",
       businessName: valid.businessName,
     });
+  });
+});
+
+describe("stock and availability", () => {
+  const withStock = (soldOutSize: string, unavailable?: string): Catalog => ({
+    ...DEFAULT_CATALOG,
+    models: DEFAULT_CATALOG.models.map((model) => ({
+      ...model,
+      available: model.id !== unavailable,
+      sizes: model.sizes.map((size) => ({ ...size, soldOut: size.id === soldOutSize })),
+    })),
+  });
+
+  it("rejects sold-out sizes and unavailable models", () => {
+    const catalog = withStock("adesivo-5", "pix");
+    const schema = customizationSchemaFor(catalog);
+    expect(schema.safeParse({ ...valid, sizeId: "adesivo-5" }).error?.issues[0].message).toBe("Este tamanho está esgotado. Escolha outro.");
+    expect(schema.safeParse({ ...valid, modelId: "pix", sizeId: "adesivo-8" }).error?.issues[0].message).toBe(
+      "Este modelo não está disponível no momento.",
+    );
+  });
+
+  it("starts and switches on sizes still in stock", () => {
+    const catalog = withStock("adesivo-5", "pix");
+    expect(initialCustomization(catalog, "avaliacao-google").sizeId).toBe("adesivo-8");
+    expect(initialCustomization(catalog, "pix").modelId).toBe("avaliacao-google");
+    const onSoldOut = { ...initialCustomization(DEFAULT_CATALOG, "instagram"), sizeId: "adesivo-5" };
+    expect(changeModel(catalog, onSoldOut, "cardapio").sizeId).toBe("display-10x15");
   });
 });

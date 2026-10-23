@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getLogLevel } from "./env";
+import { getAdminPassword, getDatabaseUrl, getLogLevel, hasDatabase } from "./env";
 import { findWhatsAppNumber, getWhatsAppNumber } from "./public-env";
 
 vi.mock("server-only", () => ({}));
@@ -11,6 +11,28 @@ describe("server environment", () => {
     expect(getLogLevel()).toBe("info");
     vi.stubEnv("LOG_LEVEL", "not-a-level");
     expect(() => getLogLevel()).toThrow("LOG_LEVEL");
+  });
+});
+
+describe("database and panel environment", () => {
+  it("treats a missing database URL as no database and rejects non-Postgres URLs without echoing them", () => {
+    vi.stubEnv("DATABASE_URL", undefined);
+    expect(hasDatabase()).toBe(false);
+    vi.stubEnv("DATABASE_URL", "https://app:sensitive-test-value@example.invalid/db");
+    expect(() => getDatabaseUrl()).toThrow("DATABASE_URL");
+    expect(() => getDatabaseUrl()).not.toThrow("sensitive-test-value");
+    vi.stubEnv("DATABASE_URL", "postgresql://app:dev@localhost:5432/app");
+    expect(hasDatabase()).toBe(true);
+    expect(getDatabaseUrl()).toBe("postgresql://app:dev@localhost:5432/app");
+  });
+
+  it("keeps the panel closed without a password of at least 12 characters", () => {
+    vi.stubEnv("ADMIN_PASSWORD", undefined);
+    expect(getAdminPassword()).toBeNull();
+    vi.stubEnv("ADMIN_PASSWORD", "curta");
+    expect(getAdminPassword()).toBeNull();
+    vi.stubEnv("ADMIN_PASSWORD", "senha-bem-longa");
+    expect(getAdminPassword()).toBe("senha-bem-longa");
   });
 });
 
