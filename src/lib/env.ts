@@ -1,5 +1,5 @@
 import "server-only";
-import { adminPasswordSchema, databaseUrlSchema, logLevelSchema, parseEnv } from "./env-schema";
+import { adminEmailSchema, adminPasswordSchema, databaseUrlSchema, logLevelSchema, parseEnv } from "./env-schema";
 
 export function getDatabaseUrl() {
   return parseEnv("DATABASE_URL", process.env.DATABASE_URL, databaseUrlSchema);
@@ -10,10 +10,14 @@ export function hasDatabase() {
   return Boolean(process.env.DATABASE_URL);
 }
 
-// Null when unset or too short: the panel stays closed.
-export function getAdminPassword() {
-  const result = adminPasswordSchema.safeParse(process.env.ADMIN_PASSWORD);
-  return result.success ? result.data : null;
+export type AdminCredentials = { email: string; password: string };
+
+// Null unless ADMIN_EMAIL is a valid e-mail and ADMIN_PASSWORD has 12+
+// characters: the panel stays closed.
+export function getAdminCredentials(): AdminCredentials | null {
+  const email = adminEmailSchema.safeParse(process.env.ADMIN_EMAIL);
+  const password = adminPasswordSchema.safeParse(process.env.ADMIN_PASSWORD);
+  return email.success && password.success ? { email: email.data, password: password.data } : null;
 }
 
 export function getLogLevel() {

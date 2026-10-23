@@ -11,7 +11,7 @@ Objetivo: o cliente escolhe e personaliza a plaquinha sozinho, pelo celular, e c
 ## Público e papéis
 
 - **Cliente (comprador):** dono de restaurante, salão, loja ou profissional autônomo no Brasil. Pouco técnico, compra pelo celular. Não faz login.
-- **Vendedor:** recebe a mensagem no WhatsApp, produz a arte final, grava o chip e combina pagamento e entrega fora do site. Usa o painel `/painel` (senha única) para manter tamanhos, preços, disponibilidade dos modelos e estoque ("Esgotado").
+- **Vendedor:** recebe a mensagem no WhatsApp, produz a arte final, grava o chip e combina pagamento e entrega fora do site. Usa o painel `/painel` (e-mail e senha) para manter tamanhos, preços, disponibilidade dos modelos e estoque ("Esgotado").
 
 ## Fluxos da versão inicial
 
@@ -65,7 +65,7 @@ Em ordem de prioridade:
 
 - Nome da loja: **Sua Plaquinha NFC**, escolhido pelo vendedor em 16/10/2026 (antes "Plaquinhas NFC"). Aparece no cabeçalho, nos títulos das páginas e no topo da mensagem do pedido.
 - Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, pnpm, Node.js 22. Detalhes em `docs/architecture.md` e `docs/setup.md`.
-- **Banco só para o catálogo (desde 23/10/2026).** Antes o catálogo ficava no código e não havia banco. A pedido do vendedor, o painel `/painel` passou a editar tamanhos, preços, disponibilidade dos modelos e "Esgotado", guardados em PostgreSQL (Neon via Vercel, plano gratuito) com Drizzle ORM, o padrão do projeto. Os pedidos continuam sem ser salvos: seguem só na mensagem do WhatsApp, e o site não guarda dados do cliente nem chaves Pix. Sem `DATABASE_URL`, a loja usa o catálogo padrão do código. Acesso ao painel por senha única em `ADMIN_PASSWORD`.
+- **Banco só para o catálogo (desde 23/10/2026).** Antes o catálogo ficava no código e não havia banco. A pedido do vendedor, o painel `/painel` passou a editar tamanhos, preços, disponibilidade dos modelos e "Esgotado", guardados em PostgreSQL (Neon via Vercel, plano gratuito) com Drizzle ORM, o padrão do projeto. Os pedidos continuam sem ser salvos: seguem só na mensagem do WhatsApp, e o site não guarda dados do cliente nem chaves Pix. Sem `DATABASE_URL`, a loja usa o catálogo padrão do código. Acesso ao painel por e-mail e senha (`ADMIN_EMAIL` e `ADMIN_PASSWORD`, só nas variáveis da Vercel; o repositório é público).
 - Validação com Zod no cliente; não há rota de servidor recebendo pedidos.
 - O QR code é gerado no navegador apenas para pré-visualização.
 
@@ -86,7 +86,7 @@ Hipóteses reversíveis (podem mudar sem retrabalho grande):
 
 Pendências que dependem do vendedor (não inventar):
 
-- **Criar o banco e a senha do painel na Vercel:** Storage → criar banco Neon ligado ao projeto (define `DATABASE_URL`) e a variável `ADMIN_PASSWORD` (12+ caracteres); depois, novo deploy de produção, que aplica as migrações.
+- **Criar o banco e a senha do painel na Vercel:** Storage → criar banco Neon ligado ao projeto (define `DATABASE_URL`) e as variáveis `ADMIN_EMAIL` e `ADMIN_PASSWORD` (12+ caracteres); depois, novo deploy de produção, que aplica as migrações.
 
 - **Preços e prazos dos serviços extras** (site, cadastro no Google, arte sob medida): o site mostra "Valor combinado pelo WhatsApp" até serem definidos.
 - **Descrição e imagem dos sites da vitrine:** o ambiente de desenvolvimento não acessou https://orcamento-assistencia-celular.vercel.app nem https://lanchonete-site-ruddy.vercel.app (adicionado em 18/10/2026, descrição provisória "Site para uma lanchonete.") nem https://santa-maria-orcamento.vercel.app (adicionado em 20/10/2026, descrição provisória "Site de orçamento para a Santa Maria."); a descrição atual ("Site de orçamento para uma assistência de celulares") foi deduzida do endereço e precisa ser confirmada. A vitrine usa uma ilustração de navegador até haver captura de tela real.

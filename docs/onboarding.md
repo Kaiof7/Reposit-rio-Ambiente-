@@ -25,7 +25,7 @@ Variáveis (`.env.example`):
 
 O banco é opcional no desenvolvimento: sem `DATABASE_URL`, a loja usa o catálogo padrão do código e o painel não salva.
 
-Para testar o painel localmente, use um PostgreSQL local (nunca o de produção), defina `DATABASE_URL` e `ADMIN_PASSWORD` em `.env.local` e aplique as migrações com `pnpm db:migrate`. Ao mudar `src/db/schema/`, rode `pnpm db:generate`, revise o SQL gerado em `drizzle/` e versione-o.
+Para testar o painel localmente, use um PostgreSQL local (nunca o de produção), defina `DATABASE_URL`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` em `.env.local` e aplique as migrações com `pnpm db:migrate`. Ao mudar `src/db/schema/`, rode `pnpm db:generate`, revise o SQL gerado em `drizzle/` e versione-o.
 
 Em produção (Vercel): Storage → banco Neon ligado ao projeto define `DATABASE_URL` e `DATABASE_URL_UNPOOLED`; o build de produção roda `scripts/migrate.mjs`, que aplica as migrações pendentes. Builds de preview e locais pulam essa etapa.
 

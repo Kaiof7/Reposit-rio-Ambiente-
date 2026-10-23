@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAdminPassword, getDatabaseUrl, getLogLevel, hasDatabase } from "./env";
+import { getAdminCredentials, getDatabaseUrl, getLogLevel, hasDatabase } from "./env";
 import { findWhatsAppNumber, getWhatsAppNumber } from "./public-env";
 
 vi.mock("server-only", () => ({}));
@@ -26,13 +26,18 @@ describe("database and panel environment", () => {
     expect(getDatabaseUrl()).toBe("postgresql://app:dev@localhost:5432/app");
   });
 
-  it("keeps the panel closed without a password of at least 12 characters", () => {
+  it("keeps the panel closed without a valid e-mail and a 12+ character password", () => {
+    vi.stubEnv("ADMIN_EMAIL", " Dono@Exemplo.com ");
     vi.stubEnv("ADMIN_PASSWORD", undefined);
-    expect(getAdminPassword()).toBeNull();
+    expect(getAdminCredentials()).toBeNull();
     vi.stubEnv("ADMIN_PASSWORD", "curta");
-    expect(getAdminPassword()).toBeNull();
+    expect(getAdminCredentials()).toBeNull();
     vi.stubEnv("ADMIN_PASSWORD", "senha-bem-longa");
-    expect(getAdminPassword()).toBe("senha-bem-longa");
+    expect(getAdminCredentials()).toEqual({ email: "dono@exemplo.com", password: "senha-bem-longa" });
+    vi.stubEnv("ADMIN_EMAIL", "nao-e-email");
+    expect(getAdminCredentials()).toBeNull();
+    vi.stubEnv("ADMIN_EMAIL", undefined);
+    expect(getAdminCredentials()).toBeNull();
   });
 });
 
